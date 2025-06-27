@@ -1,3 +1,4 @@
+@import "tailwindcss";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -9,17 +10,35 @@
  */
 
 :root {
-    --accent: #2337ff;
-    --accent-dark: #000d8a;
-    --black: 15, 18, 25;
-    --gray: 96, 115, 159;
-    --gray-light: 229, 233, 240;
-    --gray-dark: 34, 41, 57;
-    --gray-gradient: rgba(var(--gray-light), 50%), #fff;
+    --accent: #a855f7;
+    --accent-dark: #7c3aed;
+    --black: 243, 244, 246;        /* gray-100 for dark theme */
+    --gray: 156, 163, 175;         /* gray-400 for dark theme */
+    --gray-light: 55, 65, 81;      /* gray-700 for dark theme */
+    --gray-dark: 17, 24, 39;       /* gray-900 for dark theme */
+    --gray-gradient: rgba(31, 41, 55, 80%), rgba(17, 24, 39, 100%);
     --box-shadow:
-        0 2px 6px rgba(var(--gray), 25%), 0 8px 24px rgba(var(--gray), 33%),
-        0 16px 32px rgba(var(--gray), 33%);
+        0 2px 6px rgba(0, 0, 0, 25%), 0 8px 24px rgba(0, 0, 0, 33%),
+        0 16px 32px rgba(0, 0, 0, 33%);
+    
+    /* 深色主題專用變數 */
+    --bg-primary: 17, 24, 39;        /* gray-900 */
+    --bg-secondary: 31, 41, 55;      /* gray-800 */
+    --bg-tertiary: 55, 65, 81;       /* gray-700 */
+    --text-primary: 243, 244, 246;   /* gray-100 */
+    --text-secondary: 156, 163, 175; /* gray-400 */
+    --text-muted: 107, 114, 128;     /* gray-500 */
+    --border-primary: 75, 85, 99;    /* gray-600 */
+    --border-secondary: 55, 65, 81;  /* gray-700 */
+    
+    /* 主題色彩變數 */
+    --purple-400: 196, 181, 253;
+    --purple-500: 168, 85, 247;
+    --pink-400: 244, 114, 182;
+    --blue-400: 96, 165, 250;
+    --blue-500: 59, 130, 246;
 }
+
 @font-face {
     font-family: 'Atkinson';
     src: url('/fonts/atkinson-regular.woff') format('woff');
@@ -35,7 +54,6 @@
     font-display: swap;
 }
 
-
 body {
     font-family: 'Atkinson', sans-serif;
     margin: 0;
@@ -43,18 +61,22 @@ body {
     text-align: left;
     background: linear-gradient(var(--gray-gradient)) no-repeat;
     background-size: 100% 600px;
+    background-color: rgb(var(--gray-dark));
     word-wrap: break-word;
     overflow-wrap: break-word;
-    color: rgb(var(--gray-dark));
+    color: rgb(var(--black));
     font-size: 20px;
     line-height: 1.7;
+    min-height: 100vh;
 }
+
 main {
-    width: 900px;
-    max-width: calc(100% - 1em);
+    width: 1200px;
+    max-width: calc(100% - 2em);
     margin: auto;
     padding: 3em 1em;
 }
+
 h1,
 h2,
 h3,
@@ -65,81 +87,178 @@ h6 {
     color: rgb(var(--black));
     line-height: 1.2;
 }
+
 h1 {
     font-size: 3.052em;
 }
+
 h2 {
     font-size: 2.441em;
 }
+
 h3 {
     font-size: 1.953em;
 }
+
 h4 {
     font-size: 1.563em;
 }
+
 h5 {
     font-size: 1.25em;
 }
+
 strong,
 b {
     font-weight: 700;
 }
+
 a {
     color: var(--accent);
+    text-decoration: none;
+    transition: color 0.2s ease;
 }
+
 a:hover {
-    color: var(--accent);
+    color: var(--accent-dark);
 }
+
 p {
     margin-bottom: 1em;
+    color: rgb(var(--gray));
 }
+
 .prose p {
     margin-bottom: 2em;
 }
+
 textarea {
     width: 100%;
     font-size: 16px;
+    background-color: rgb(var(--bg-secondary));
+    color: rgb(var(--text-primary));
+    border: 1px solid rgb(var(--border-primary));
+    border-radius: 8px;
+    padding: 0.5em;
 }
+
 input {
     font-size: 16px;
+    background-color: rgb(var(--bg-secondary));
+    color: rgb(var(--text-primary));
+    border: 1px solid rgb(var(--border-primary));
+    border-radius: 4px;
+    padding: 0.5em;
 }
+
 table {
     width: 100%;
+    border-collapse: collapse;
+    background-color: rgb(var(--bg-secondary));
 }
+
+table th,
+table td {
+    border: 1px solid rgb(var(--border-primary));
+    padding: 0.5em;
+    color: rgb(var(--text-primary));
+}
+
+table th {
+    background-color: rgb(var(--bg-tertiary));
+    font-weight: 700;
+}
+
 img {
     max-width: 100%;
     height: auto;
     border-radius: 8px;
 }
+
 code {
-    font-szie: 10px;
+    font-size: 14px;
     padding: 2px 5px;
-    background-color: rgb(var(--gray-light));
-    border-radius: 2px;
+    background-color: rgb(var(--bg-secondary));
+    color: rgb(var(--purple-400));
+    border-radius: 4px;
+    border: 1px solid rgb(var(--border-primary));
 }
+
 pre {
     padding: 1.5em;
     border-radius: 8px;
+    background-color: rgb(var(--bg-secondary));
+    border: 1px solid rgb(var(--border-primary));
+    overflow-x: auto;
 }
+
 pre > code {
     all: unset;
+    color: rgb(var(--text-primary));
 }
+
 blockquote {
     border-left: 4px solid var(--accent);
     padding: 0 0 0 20px;
     margin: 0px;
     font-size: 1.333em;
+    color: rgb(var(--gray));
+    background-color: rgba(var(--bg-secondary), 0.5);
+    border-radius: 0 8px 8px 0;
+    padding: 1em 0 1em 20px;
 }
+
 hr {
     border: none;
-    border-top: 1px solid rgb(var(--gray-light));
+    border-top: 1px solid rgb(var(--border-primary));
 }
+
+/* 深色主題專用樣式 */
+.gradient-text {
+    background: linear-gradient(to right, rgb(var(--purple-400)), rgb(var(--pink-400)), rgb(var(--blue-400)));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    font-weight: 700;
+}
+
+/* 卡片樣式 */
+.card {
+    background-color: rgba(var(--bg-secondary), 0.8);
+    backdrop-filter: blur(8px);
+    border: 1px solid rgb(var(--border-primary));
+    border-radius: 12px;
+    padding: 1.5em;
+    margin-bottom: 1.5em;
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+    border-color: var(--accent);
+    box-shadow: var(--box-shadow);
+    transform: translateY(-2px);
+}
+
+/* 標籤樣式 */
+.tag {
+    display: inline-block;
+    padding: 0.25em 0.75em;
+    font-size: 0.75em;
+    font-weight: 600;
+    background: rgba(var(--purple-500), 0.2);
+    color: rgb(var(--purple-400));
+    border-radius: 9999px;
+    border: 1px solid rgba(var(--purple-500), 0.3);
+    margin: 0.25em;
+}
+
 @media (max-width: 720px) {
     body {
         font-size: 18px;
     }
     main {
         padding: 1em;
+        width: 100%;
     }
 }
 

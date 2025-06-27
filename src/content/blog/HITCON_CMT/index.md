@@ -3,7 +3,7 @@ title: HITCON_CMT
 pubDate: 2024-08-29
 description: ''
 heroImage: 'hitcon_banner.png'
-tags: [Life]
+tags: [HITCON,HITCON,]
 category: 'Life'
 ---
 
