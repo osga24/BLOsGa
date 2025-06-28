@@ -4,14 +4,16 @@
 @tailwind utilities;
 
 :root {
-    --accent: #a855f7;
-    --accent-dark: #7c3aed;
-    --black: 243, 244, 246;
-    --gray: 156, 163, 175;
-    --gray-dark: 17, 24, 39;
-    --text-muted: 107, 114, 128;
-    --border: 75, 85, 99;
-    --bg-card: 31, 41, 55;
+    --accent: #5A8071;
+    --accent-dark: #4A6B5C;
+    --black: 240, 240, 240;         /* #F0F0F0 - 標題文字 */
+    --gray: 224, 224, 224;          /* #E0E0E0 - 一般文字 */
+    --gray-light: 204, 204, 204;    /* #CCCCCC - 略深文字 */
+    --gray-dark: 35, 35, 37;        /* #232325 - 主背景 */
+    --text-muted: 160, 160, 160;    /* 更淡的文字 */
+    --border: 75, 75, 82;           /* 邊框色 */
+    --bg-card: 64, 64, 70;          /* #404046 - 卡片背景 */
+    --bg-hover: 75, 75, 82;         /* #4B4B52 - hover 背景 */
 }
 
 @font-face {
@@ -82,7 +84,7 @@ img {
 
 /* 漸層文字 */
 .gradient-text {
-    background: linear-gradient(45deg, #a855f7, #ec4899, #3b82f6);
+    background: linear-gradient(45deg, var(--accent), #E0E0E0, var(--accent));
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -91,9 +93,9 @@ img {
 
 /* 卡片 */
 .card {
-    background: linear-gradient(135deg, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 100%);
+    background: rgba(var(--bg-card), 0.8);
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255,255,255,0.1);
+    border: 1px solid rgba(var(--border), 0.3);
     border-radius: 16px;
     padding: 1.5em;
     transition: all 0.3s ease;
@@ -108,14 +110,9 @@ img {
     left: 0;
     right: 0;
     height: 1px;
-    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.1), transparent);
 }
 
-.card:hover {
-    transform: translateY(-4px);
-    border-color: rgba(168, 85, 247, 0.3);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.3);
-}
 
 /* Hero 區域 */
 .hero-section {
@@ -221,7 +218,7 @@ img {
     display: inline-block;
     padding: 0.4rem 0.8rem;
     border-radius: 6px;
-    background-color: rgba(156, 163, 175, 0.15);
+    background-color: rgba(var(--bg-hover), 0.6);
     color: rgb(var(--gray));
     font-weight: 500;
     font-size: 0.75rem;
@@ -231,7 +228,8 @@ img {
 }
 
 .post-category:hover {
-    background-color: rgba(156, 163, 175, 0.2);
+    background-color: rgba(var(--bg-hover), 0.8);
+    color: rgb(var(--black));
 }
 
 .post-title {
@@ -272,8 +270,8 @@ img {
 }
 
 .post-tags span {
-    font-size: 0.8rem;
-    padding: 0.3rem;
+    font-size: 0.7rem;
+    padding: 0.3rem 0.6rem;
     border-radius: 6px;
     background-color: transparent;
     color: white;
@@ -281,6 +279,9 @@ img {
     transition: all 0.2s ease;
 }
 
+.post-tags span:hover {
+    background-color: rgba(var(--bg-hover), 0.6);
+}
 
 .tag-more {
     background-color: transparent !important;
@@ -334,3 +335,4 @@ img {
     white-space: nowrap;
     border: 0;
 }
+

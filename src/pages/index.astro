@@ -20,9 +20,7 @@ const posts = (await getCollection('blog')).sort(
 		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} /> 
 	</head>
 	<body>
-		<Header />
-		
-		
+		<Header />			
 		<main>
 			<section class="hero-section">
 				<h1 class="gradient-text">
@@ -38,7 +36,7 @@ const posts = (await getCollection('blog')).sort(
 				<div class="posts-grid">
 					{posts.map((post) => (
 						<article class="post-card card">
-							<a href={`/blog/${post.id}/`} class="post-link">
+							<a href={`/blog/${post.slug}/`} class="post-link">
 								{post.data.heroImage && (
 									<div class="post-image-container">
 										<img
@@ -92,7 +90,8 @@ const posts = (await getCollection('blog')).sort(
 			) : (
 				<div class="empty-state">
 					<div class="empty-icon">📝</div>
-					<h3>這個人很懶什麼都沒寫</h3>
+					<h3>還沒有文章</h3>
+					<p>開始寫你的第一篇文章吧！</p>
 				</div>
 			)}
 		</main>

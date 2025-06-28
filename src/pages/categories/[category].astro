@@ -1,0 +1,158 @@
+---
+import BaseHead from '../../components/BaseHead.astro';
+import Header from '../../components/Header.astro';
+import Footer from '../../components/Footer.astro';
+import FormattedDate from '../../components/FormattedDate.astro';
+import { SITE_TITLE } from '../../consts';
+import "../../styles/global.css";
+import { getCollection } from 'astro:content';
+
+export async function getStaticPaths() {
+    const posts = await getCollection('blog');
+    
+    // 獲取所有獨特的分類
+    const categories = [...new Set(posts.map(post => post.data.category).filter(Boolean))];
+    
+    return categories.map(category => ({
+        params: { category: encodeURIComponent(category) },
+        props: { category }
+    }));
+}
+
+const { category } = Astro.props;
+const decodedCategory = decodeURIComponent(category);
+
+// 獲取該分類的所有文章
+const allPosts = await getCollection('blog');
+const categoryPosts = allPosts
+    .filter(post => post.data.category === decodedCategory)
+    .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+
+const pageTitle = `${decodedCategory} - ${SITE_TITLE}`;
+const pageDescription = `瀏覽「${decodedCategory}」分類下的 ${categoryPosts.length} 篇文章`;
+---
+
+<!doctype html>
+<html lang="zh-TW">
+    <head>
+        <BaseHead title={pageTitle} description={pageDescription} />
+    </head>
+    <body>
+        <Header />
+        
+        <main>
+            <nav class="breadcrumb">
+				<span>/</span>
+				<a href="/">home</a>
+				<span>/</span>
+                <a href="/categories/">categories</a>
+				<span>/</span>
+                <span>{decodedCategory}</span>
+            </nav>
+
+            <!-- Hero Section -->
+            <section class="hero-section">
+                <h1 class="gradient-text">{decodedCategory}</h1>
+                <p class="hero-description">
+                    {categoryPosts.length} 篇文章
+                </p>
+                <div class="hero-divider"></div>
+            </section>
+
+            <!-- 分類文章列表 -->
+            {categoryPosts.length > 0 ? (
+                <div class="posts-grid">
+                    {categoryPosts.map((post) => (
+                        <article class="post-card card">
+                            <a href={`/blog/${post.slug}/`} class="post-link">
+                                {post.data.heroImage && (
+                                    <div class="post-image-container">
+                                        <img
+                                            class="post-image"
+                                            width={post.data.heroImage.width}
+                                            height={post.data.heroImage.height}
+                                            src={post.data.heroImage.src}
+                                            alt={post.data.title}
+                                            loading="lazy"
+                                            decoding="async"
+                                        />
+                                    </div>
+                                )}
+                                
+                                <div class="post-content">
+                                    <h3 class="post-title">
+                                        {post.data.title}
+                                    </h3>
+
+                                    {post.data.description && (
+                                        <p class="post-description">
+                                            {post.data.description}
+                                        </p>
+                                    )}
+
+                                    <div class="post-meta">
+                                        <div class="post-tags">
+                                            {post.data.tags && post.data.tags.slice(0, 3).map(tag => (
+                                                <span>#{tag}</span>
+                                            ))}
+                                            {post.data.tags && post.data.tags.length > 3 && (
+                                                <span class="tag-more">+{post.data.tags.length - 3}</span>
+                                            )}
+                                        </div>
+                                        
+                                        <time class="post-date">
+                                            <FormattedDate date={post.data.pubDate} />
+                                        </time>
+                                    </div>
+                                </div>
+                            </a>
+                        </article>
+                    ))}
+                </div>
+            ) : (
+                <div class="empty-state">
+                    <div class="empty-icon">📄</div>
+                    <h3>此分類暫無文章</h3>
+                    <p>「{decodedCategory}」分類下還沒有文章</p>
+                </div>
+            )}
+        </main>
+        
+        <Footer />
+
+        <style>
+            /* 麵包屑導航 */
+            .breadcrumb {
+                display: flex;
+                align-items: center;
+                gap: 0.5rem;
+                margin-bottom: 2rem;
+                font-size: 0.9rem;
+                color: rgb(var(--gray));
+            }
+
+            .breadcrumb a {
+                color: rgb(var(--gray));
+                text-decoration: none;
+                transition: color 0.3s ease;
+            }
+
+            .breadcrumb a:hover {
+                color: var(--accent);
+            }
+
+            .breadcrumb span:last-child {
+                color: rgb(var(--black));
+                font-weight: 600;
+            }
+
+            /* 響應式 */
+            @media (max-width: 720px) {
+                .breadcrumb {
+                    font-size: 0.8rem;
+                    margin-bottom: 1.5rem;
+                }
+            }
+        </style>
+    </body>
+</html>
