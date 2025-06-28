@@ -4,13 +4,13 @@ import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
 import FormattedDate from '../../components/FormattedDate.astro';
 import { SITE_TITLE } from '../../consts';
+import { ViewTransitions } from 'astro:transitions';
 import "../../styles/global.css";
 import { getCollection } from 'astro:content';
 
 export async function getStaticPaths() {
     const posts = await getCollection('blog');
     
-    // 獲取所有獨特的分類
     const categories = [...new Set(posts.map(post => post.data.category).filter(Boolean))];
     
     return categories.map(category => ({
@@ -22,7 +22,6 @@ export async function getStaticPaths() {
 const { category } = Astro.props;
 const decodedCategory = decodeURIComponent(category);
 
-// 獲取該分類的所有文章
 const allPosts = await getCollection('blog');
 const categoryPosts = allPosts
     .filter(post => post.data.category === decodedCategory)
@@ -36,6 +35,7 @@ const pageDescription = `瀏覽「${decodedCategory}」分類下的 ${categoryPo
 <html lang="zh-TW">
     <head>
         <BaseHead title={pageTitle} description={pageDescription} />
+		<ViewTransitions/>
     </head>
     <body>
         <Header />
@@ -50,7 +50,6 @@ const pageDescription = `瀏覽「${decodedCategory}」分類下的 ${categoryPo
                 <span>{decodedCategory}</span>
             </nav>
 
-            <!-- Hero Section -->
             <section class="hero-section">
                 <h1 class="gradient-text">{decodedCategory}</h1>
                 <p class="hero-description">
@@ -59,7 +58,6 @@ const pageDescription = `瀏覽「${decodedCategory}」分類下的 ${categoryPo
                 <div class="hero-divider"></div>
             </section>
 
-            <!-- 分類文章列表 -->
             {categoryPosts.length > 0 ? (
                 <div class="posts-grid">
                     {categoryPosts.map((post) => (
@@ -121,7 +119,6 @@ const pageDescription = `瀏覽「${decodedCategory}」分類下的 ${categoryPo
         <Footer />
 
         <style>
-            /* 麵包屑導航 */
             .breadcrumb {
                 display: flex;
                 align-items: center;
@@ -146,7 +143,6 @@ const pageDescription = `瀏覽「${decodedCategory}」分類下的 ${categoryPo
                 font-weight: 600;
             }
 
-            /* 響應式 */
             @media (max-width: 720px) {
                 .breadcrumb {
                     font-size: 0.8rem;

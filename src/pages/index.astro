@@ -5,6 +5,8 @@ import Footer from '../components/Footer.astro';
 import { SITE_TITLE, SITE_DESCRIPTION } from '../consts';
 import "../styles/global.css";
 import Squares from '../components/Squares.astro';
+import TypeWirte from '../components/TypeWrite.astro';
+import { ViewTransitions } from 'astro:transitions';
 import { getCollection } from 'astro:content';
 import FormattedDate from '../components/FormattedDate.astro';
 import { Image } from 'astro:assets';
@@ -12,90 +14,236 @@ import { Image } from 'astro:assets';
 const posts = (await getCollection('blog')).sort(
 	(a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf(),
 );
+
+const talksomething = [
+	"每個成功的男人背後，都有一條脊椎",
+	"如果你願意多花一點時間了解我，你會發現多花了一點時間",
+];
+
 ---
 
 <!doctype html>
 <html lang="zh-TW">
 	<head>
 		<BaseHead title={SITE_TITLE} description={SITE_DESCRIPTION} /> 
+		<ViewTransitions/>
 	</head>
 	<body>
-		<Header />			
-		<main>
-			<section class="hero-section">
+		<Header />
+		<section class="hero-section">
+			<div class="hero-background">
+				<Squares 
+					direction="diagonal"
+					speed={0.5}
+					squareSize={30}
+					borderColor="rgba(90, 128, 113, 0.15)"
+					hoverFillColor="rgba(90, 128, 113, 0.1)"
+					opacity={0.3}
+					class="hero-squares"
+				/>
+			</div>
+			<div class="hero-content">
 				<h1 class="gradient-text">
-					{SITE_TITLE}
+					/ {SITE_TITLE} / 
 				</h1>
 				<p class="hero-description">
-					{SITE_DESCRIPTION}
+					<TypeWirte
+						words={talksomething}
+						speed={100}
+						deleteSpeed={80}
+						pauseTime={3000}>
 				</p>
+
 				<div class="hero-divider"></div>
-			</section>
+
+				<div class="social-icons">
+					<a href="https://github.com/osga24/blosga" target="_blank" class="social-link" aria-label="GitHub Repository">
+						<svg viewBox="0 0 16 16" width="20" height="20">
+							<path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path>
+						</svg>
+					</a>
+					<a href="https://osga.dev" target="_blank" class="social-link" aria-label="Personal Website">
+						<svg viewBox="0 0 16 16" width="20" height="20">
+							<path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zM6.5 4.5c0-.28.22-.5.5-.5s.5.22.5.5-.22.5-.5.5-.5-.22-.5-.5zm3 0c0-.28.22-.5.5-.5s.5.22.5.5-.22.5-.5.5-.5-.22-.5-.5zM8 13c-2.76 0-5-2.24-5-5 0-.55.45-1 1-1s1 .45 1 1c0 1.65 1.35 3 3 3s3-1.35 3-3c0-.55.45-1 1-1s1 .45 1 1c0 2.76-2.24 5-5 5z"/>
+						</svg>
+					</a>
+				</div>
+			</div>
+		</section>
+		<main>
 
 			{posts.length > 0 ? (
-				<div class="posts-grid">
-					{posts.map((post) => (
-						<article class="post-card card">
-							<a href={`/blog/${post.slug}/`} class="post-link">
-								{post.data.heroImage && (
-									<div class="post-image-container">
-										<img
-											class="post-image"
-											width={post.data.heroImage.width}
-											height={post.data.heroImage.height}
-											src={post.data.heroImage.src}
-											alt={post.data.title}
-											loading="lazy"
-											decoding="async"
-										/>
-									</div>
-								)}
-								
-								<div class="post-content">
-									{post.data.category && (
-										<span class="post-category">
-											{post.data.category}
-										</span>
-									)}
+			<div class="posts-grid">
+				{posts.map((post) => (
+				<article class="post-card card">
+					<a href={`/blog/${post.slug}/`} class="post-link">
+						{post.data.heroImage && (
+						<div class="post-image-container">
+							<img
+								class="post-image"
+								width={post.data.heroImage.width}
+								height={post.data.heroImage.height}
+								src={post.data.heroImage.src}
+								alt={post.data.title}
+								loading="lazy"
+								decoding="async"
+							/>
+						</div>
+)}
 
-									<h3 class="post-title">
-										{post.data.title}
-									</h3>
+						<div class="post-content">
+							{post.data.category && (
+							<span class="post-category">
+								{post.data.category}
+							</span>
+)}
 
-									{post.data.description && (
-										<p class="post-description">
-											{post.data.description}
-										</p>
-									)}
+							<h3 class="post-title">
+								{post.data.title}
+							</h3>
 
-									<div class="post-meta">
-										<div class="post-tags">
-											{post.data.tags && post.data.tags.slice(0, 3).map(tag => (
-												<span>#{tag}</span>
-											))}
-											{post.data.tags && post.data.tags.length > 3 && (
-												<span class="tag-more">+{post.data.tags.length - 3}</span>
-											)}
-										</div>
-										
-										<time class="post-date">
-											<FormattedDate date={post.data.pubDate} />
-										</time>
-									</div>
+							{post.data.description && (
+							<p class="post-description">
+								{post.data.description}
+							</p>
+)}
+
+							<div class="post-meta">
+								<div class="post-tags">
+									{post.data.tags && post.data.tags.slice(0, 3).map(tag => (
+									<span>#{tag}</span>
+))}
+									{post.data.tags && post.data.tags.length > 3 && (
+									<span class="tag-more">+{post.data.tags.length - 3}</span>
+)}
 								</div>
-							</a>
-						</article>
-					))}
-				</div>
-			) : (
-				<div class="empty-state">
-					<div class="empty-icon">📝</div>
-					<h3>還沒有文章</h3>
-					<p>開始寫你的第一篇文章吧！</p>
-				</div>
-			)}
+
+								<time class="post-date">
+									<FormattedDate date={post.data.pubDate} />
+								</time>
+							</div>
+						</div>
+					</a>
+				</article>
+))}
+			</div>
+) : (
+			<div class="empty-state">
+				<div class="empty-icon">📝</div>
+				<h3>還沒有文章</h3>
+				<p>開始寫你的第一篇文章吧！</p>
+			</div>
+)}
 		</main>
-		
+
 		<Footer />
 	</body>
 </html>
+
+<style>
+.hero-section {
+	max-width: calc(100% - 1.5em);
+	margin: 1.5em;
+	position: relative;
+	margin-bottom: 4rem;
+	border-radius: 20px;
+	overflow: hidden;
+	backdrop-filter: blur(10px);
+	border: 1px solid rgba(var(--border), 0.2);
+}
+
+.hero-background {
+	position: absolute;
+	top: 0;
+	left: 0;
+	right: 0;
+	bottom: 0;
+	z-index: 1;
+}
+
+.hero-content {
+	position: relative;
+	z-index: 2;
+	text-align: center;
+	padding: 4rem 2rem;
+	background: rgba(var(--gray-dark), 0.7);
+	backdrop-filter: blur(10px);
+}
+
+.hero-squares {
+	opacity: 0.6;
+}
+
+/* 社交圖標樣式 */
+.social-icons {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 1rem;
+	margin-top: 2rem;
+}
+
+.social-link {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	width: 44px;
+	height: 44px;
+	color: rgb(var(--gray));
+	text-decoration: none;
+	border-radius: 12px;
+	transition: all 0.3s ease;
+	background: rgba(var(--bg-card), 0.3);
+	border: 1px solid rgba(var(--border), 0.1);
+}
+
+.social-link:hover {
+	color: var(--accent);
+	background: rgba(var(--bg-hover), 0.6);
+	border-color: rgba(var(--accent), 0.3);
+	transform: translateY(-2px);
+	box-shadow: 0 4px 12px rgba(var(--accent), 0.2);
+}
+
+.social-link svg {
+	transition: transform 0.3s ease;
+}
+
+.social-link:hover svg {
+	transform: scale(1.1);
+}
+
+@media (max-width: 720px) {
+	.hero-content {
+		padding: 2rem 1rem;
+	}
+
+	.social-icons {
+		gap: 0.75rem;
+	}
+
+	.social-link {
+		width: 40px;
+		height: 40px;
+	}
+}
+
+@media (max-width: 480px) {
+	.social-icons {
+		gap: 0.5rem;
+	}
+
+	.social-link {
+		width: 36px;
+		height: 36px;
+	}
+}
+
+.squares-canvas {
+	width: 100%;
+	height: 100%;
+	position: absolute;
+	top: 0;
+	left: 0;
+}
+</style>

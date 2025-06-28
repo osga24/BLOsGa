@@ -2,6 +2,7 @@
 import BaseHead from '../../components/BaseHead.astro';
 import Header from '../../components/Header.astro';
 import Footer from '../../components/Footer.astro';
+import { ViewTransitions } from 'astro:transitions';
 import { SITE_TITLE } from '../../consts';
 import "../../styles/global.css";
 import { getCollection } from 'astro:content';
@@ -29,6 +30,7 @@ const categories = Object.entries(categoryStats)
 <html lang="zh-TW">
     <head>
         <BaseHead title={`分類 - ${SITE_TITLE}`} description="瀏覽所有文章分類" />
+		<ViewTransitions/>
     </head>
     <body>
         <Header />

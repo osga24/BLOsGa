@@ -279,9 +279,6 @@ img {
     transition: all 0.2s ease;
 }
 
-.post-tags span:hover {
-    background-color: rgba(var(--bg-hover), 0.6);
-}
 
 .tag-more {
     background-color: transparent !important;
@@ -336,3 +333,27 @@ img {
     border: 0;
 }
 
+/* 淡入淡出效果 */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 0.3s;
+  animation-timing-function: ease-in-out;
+}
+
+::view-transition-old(root) {
+  animation-name: fade-out;
+}
+
+::view-transition-new(root) {
+  animation-name: fade-in;
+}
+
+@keyframes fade-out {
+  0% { opacity: 1; }
+  100% { opacity: 0; }
+}
+
+@keyframes fade-in {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}

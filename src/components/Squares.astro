@@ -1,0 +1,227 @@
+---
+export interface Props {
+  direction?: "diagonal" | "up" | "right" | "down" | "left";
+  speed?: number;
+  borderColor?: string;
+  squareSize?: number;
+  hoverFillColor?: string;
+  class?: string;
+  opacity?: number;
+}
+
+const {
+  direction = "right",
+  speed = 1,
+  borderColor = "rgba(75, 75, 82, 0.3)",
+  squareSize = 30,
+  hoverFillColor = "rgba(90, 128, 113, 0.2)",
+  class: className = "",
+  opacity = 0.5
+} = Astro.props;
+---
+
+<canvas 
+  class={`squares-canvas ${className}`}
+  data-direction={direction}
+  data-speed={speed}
+  data-border-color={borderColor}
+  data-square-size={squareSize}
+  data-hover-fill-color={hoverFillColor}
+  data-opacity={opacity}
+></canvas>
+
+<style>
+  .squares-canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+</style>
+
+<script>
+  interface GridOffset {
+    x: number;
+    y: number;
+  }
+
+  class SquaresAnimation {
+    private canvas: HTMLCanvasElement;
+    private ctx: CanvasRenderingContext2D;
+    private requestId: number | null = null;
+    private numSquaresX = 0;
+    private numSquaresY = 0;
+    private gridOffset: GridOffset = { x: 0, y: 0 };
+    private hoveredSquare: GridOffset | null = null;
+    
+    // Configuration
+    private direction: string;
+    private speed: number;
+    private borderColor: string;
+    private squareSize: number;
+    private hoverFillColor: string;
+    private opacity: number;
+
+    constructor(canvas: HTMLCanvasElement) {
+      this.canvas = canvas;
+      const context = canvas.getContext("2d");
+      if (!context) {
+        throw new Error("Could not get canvas context");
+      }
+      this.ctx = context;
+
+      // Get configuration from data attributes
+      this.direction = canvas.dataset.direction || "right";
+      this.speed = parseFloat(canvas.dataset.speed || "1");
+      this.borderColor = canvas.dataset.borderColor || "rgba(75, 75, 82, 0.3)";
+      this.squareSize = parseInt(canvas.dataset.squareSize || "30");
+      this.hoverFillColor = canvas.dataset.hoverFillColor || "rgba(90, 128, 113, 0.2)";
+      this.opacity = parseFloat(canvas.dataset.opacity || "0.5");
+
+      this.init();
+    }
+
+    private init() {
+      this.setupCanvas();
+      this.bindEvents();
+      this.startAnimation();
+    }
+
+    private setupCanvas() {
+      const resizeCanvas = () => {
+        this.canvas.width = this.canvas.offsetWidth;
+        this.canvas.height = this.canvas.offsetHeight;
+        this.numSquaresX = Math.ceil(this.canvas.width / this.squareSize) + 1;
+        this.numSquaresY = Math.ceil(this.canvas.height / this.squareSize) + 1;
+      };
+
+      window.addEventListener("resize", resizeCanvas);
+      resizeCanvas();
+    }
+
+    private bindEvents() {
+      const handleMouseMove = (event: MouseEvent) => {
+        const rect = this.canvas.getBoundingClientRect();
+        const mouseX = event.clientX - rect.left;
+        const mouseY = event.clientY - rect.top;
+
+        const startX = Math.floor(this.gridOffset.x / this.squareSize) * this.squareSize;
+        const startY = Math.floor(this.gridOffset.y / this.squareSize) * this.squareSize;
+
+        const hoveredSquareX = Math.floor(
+          (mouseX + this.gridOffset.x - startX) / this.squareSize
+        );
+        const hoveredSquareY = Math.floor(
+          (mouseY + this.gridOffset.y - startY) / this.squareSize
+        );
+
+        if (
+          !this.hoveredSquare ||
+          this.hoveredSquare.x !== hoveredSquareX ||
+          this.hoveredSquare.y !== hoveredSquareY
+        ) {
+          this.hoveredSquare = { x: hoveredSquareX, y: hoveredSquareY };
+        }
+      };
+
+      const handleMouseLeave = () => {
+        this.hoveredSquare = null;
+      };
+
+      this.canvas.addEventListener("mousemove", handleMouseMove);
+      this.canvas.addEventListener("mouseleave", handleMouseLeave);
+    }
+
+    private drawGrid() {
+      this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+
+      const startX = Math.floor(this.gridOffset.x / this.squareSize) * this.squareSize;
+      const startY = Math.floor(this.gridOffset.y / this.squareSize) * this.squareSize;
+
+      for (let x = startX; x < this.canvas.width + this.squareSize; x += this.squareSize) {
+        for (let y = startY; y < this.canvas.height + this.squareSize; y += this.squareSize) {
+          const squareX = x - (this.gridOffset.x % this.squareSize);
+          const squareY = y - (this.gridOffset.y % this.squareSize);
+
+          if (
+            this.hoveredSquare &&
+            Math.floor((x - startX) / this.squareSize) === this.hoveredSquare.x &&
+            Math.floor((y - startY) / this.squareSize) === this.hoveredSquare.y
+          ) {
+            this.ctx.fillStyle = this.hoverFillColor;
+            this.ctx.fillRect(squareX, squareY, this.squareSize, this.squareSize);
+          }
+
+          this.ctx.strokeStyle = this.borderColor;
+          this.ctx.strokeRect(squareX, squareY, this.squareSize, this.squareSize);
+        }
+      }
+
+      // Apply subtle gradient overlay that matches the site theme
+      const gradient = this.ctx.createRadialGradient(
+        this.canvas.width / 2,
+        this.canvas.height / 2,
+        0,
+        this.canvas.width / 2,
+        this.canvas.height / 2,
+        Math.sqrt(this.canvas.width ** 2 + this.canvas.height ** 2) / 2
+      );
+      gradient.addColorStop(0, "rgba(35, 35, 37, 0)");
+      gradient.addColorStop(1, `rgba(35, 35, 37, ${this.opacity})`);
+
+      this.ctx.fillStyle = gradient;
+      this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+    }
+
+    private updateAnimation = () => {
+      const effectiveSpeed = Math.max(this.speed, 0.1);
+      
+      switch (this.direction) {
+        case "right":
+          this.gridOffset.x = (this.gridOffset.x - effectiveSpeed + this.squareSize) % this.squareSize;
+          break;
+        case "left":
+          this.gridOffset.x = (this.gridOffset.x + effectiveSpeed + this.squareSize) % this.squareSize;
+          break;
+        case "up":
+          this.gridOffset.y = (this.gridOffset.y + effectiveSpeed + this.squareSize) % this.squareSize;
+          break;
+        case "down":
+          this.gridOffset.y = (this.gridOffset.y - effectiveSpeed + this.squareSize) % this.squareSize;
+          break;
+        case "diagonal":
+          this.gridOffset.x = (this.gridOffset.x - effectiveSpeed + this.squareSize) % this.squareSize;
+          this.gridOffset.y = (this.gridOffset.y - effectiveSpeed + this.squareSize) % this.squareSize;
+          break;
+      }
+
+      this.drawGrid();
+      this.requestId = requestAnimationFrame(this.updateAnimation);
+    };
+
+    private startAnimation() {
+      this.requestId = requestAnimationFrame(this.updateAnimation);
+    }
+
+    public destroy() {
+      if (this.requestId) {
+        cancelAnimationFrame(this.requestId);
+      }
+    }
+  }
+
+  // Initialize all squares canvases
+  document.addEventListener("DOMContentLoaded", () => {
+    const canvases = document.querySelectorAll<HTMLCanvasElement>(".squares-canvas");
+    const animations: SquaresAnimation[] = [];
+
+    canvases.forEach((canvas) => {
+      const animation = new SquaresAnimation(canvas);
+      animations.push(animation);
+    });
+
+    // Cleanup on page unload
+    window.addEventListener("beforeunload", () => {
+      animations.forEach(animation => animation.destroy());
+    });
+  });
+</script>
