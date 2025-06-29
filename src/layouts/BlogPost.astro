@@ -7,83 +7,178 @@ import FormattedDate from '../components/FormattedDate.astro';
 import { Image } from 'astro:assets';
 import { ViewTransitions } from 'astro:transitions';
 
+type Props = CollectionEntry<'blog'>['data'] & {
+	slug: string;
+};
 
-type Props = CollectionEntry<'blog'>['data'];
-
-const { title, description, pubDate, updatedDate, heroImage } = Astro.props;
+const { title, description, pubDate, updatedDate, heroImage, category, tags, slug } = Astro.props;
 ---
 
-<html lang="en">
+<html lang="zh-TW">
 	<head>
 		<BaseHead title={title} description={description} />
 		<ViewTransitions/>
-		<style>
-			main {
-				width: calc(100% - 2em);
-				max-width: 100%;
-				margin: 0;
-			}
-			.hero-image {
-				width: 100%;
-			}
-			.hero-image img {
-				display: block;
-				margin: 0 auto;
-				border-radius: 12px;
-				box-shadow: var(--box-shadow);
-			}
-			.prose {
-				width: 720px;
-				max-width: calc(100% - 2em);
-				margin: auto;
-				padding: 1em;
-				color: rgb(var(--gray-dark));
-			}
-			.title {
-				margin-bottom: 1em;
-				padding: 1em 0;
-				/* text-align: center; */
-				line-height: 1;
-			}
-			.title h1 {
-				margin: 0 0 0.5em 0;
-			}
-			.date {
-				margin-bottom: 0.5em;
-				color: rgb(var(--gray));
-			}
-			.last-updated-on {
-				font-style: italic;
-			}
-		</style>
 	</head>
 
 	<body>
 		<Header />
-		<main>
-			<article>
-				<div class="hero-image">
-					{heroImage && <Image width={1020} height={510} src={heroImage} alt="" />}
-				</div>
-				<div class="prose">
-					<div class="title">
-						<div class="date">
-							<FormattedDate date={pubDate} />
-							{
-								updatedDate && (
-									<div class="last-updated-on">
-										Last updated on <FormattedDate date={updatedDate} />
+		
+		<main class="blog-main">
+			<div class="blog-container">
+				<!-- 內容 -->
+				<article class="blog-article">
+					<nav class="breadcrumb">
+						<a href="/">home</a>
+						<span>/</span>
+						{category && (
+							<>
+								<a href={`/categories/${encodeURIComponent(category)}/`}>{category}</a>
+						<span>/</span>
+							</>
+						)}
+						<span>{title}</span>
+					</nav>
+
+					<header class="article-hero">
+						<div class="hero-content">
+							{category && (
+							<span class="article-category">/ {category} /</span>
+							)}
+							
+							<h1 class="article-title">{title}</h1>
+							
+							<div class="article-meta-line">
+								<time class="publish-date">
+									<FormattedDate date={pubDate} />
+								</time>
+								{updatedDate && (
+									<time class="update-date">
+										最後更新於 <FormattedDate date={updatedDate} />
+									</time>
+								)}
+								{tags && tags.length > 0 && (
+									<div class="hero-tags">
+										{tags.slice(0, 3).map(tag => (
+											<span class="tag">#{tag}</span>
+										))}
+										{tags.length > 3 && (
+											<span class="tag more">+{tags.length - 3}</span>
+										)}
 									</div>
-								)
-							}
+								)}
+							</div>
 						</div>
-						<h1>{title}</h1>
-						<hr />
+
+						{heroImage && (
+							<div class="hero-image">
+								<Image 
+									width={800} 
+									height={400} 
+									src={heroImage} 
+									alt={title}
+									class="hero-img"
+								/>
+							</div>
+						)}
+<br/>
+						<div class='article-meta-line'></div>
+					</header>
+					<!-- TL;DR -->
+					{description && (
+						<div class="tldr-section">
+							<h3 class="tldr-title">💡 TL;DR</h3>
+							<p class="tldr-content">{description}</p>
+						</div>
+					)}
+
+					<!-- 文章 -->
+					<div class="article-content">
+						<slot />
 					</div>
-					<slot />
-				</div>
-			</article>
+
+
+					<!-- 標籤 -->
+					{tags && tags.length > 0 && (
+						<footer class="article-footer">
+							<div class="article-tags">
+								<span class="tags-label">tags: </span>
+								{tags.map(tag => (
+									<span class="tag">#{tag}</span>
+								))}
+							</div>
+						</footer>
+					)}
+				</article>
+
+				<!-- 目錄 -->
+				<aside class="blog-sidebar">
+					<div class="sidebar-section">
+						<h3 class="sidebar-title">目錄</h3>
+						<nav class="table-of-contents" id="toc">
+						</nav>
+					</div>
+				</aside>
+			</div>
 		</main>
+		
 		<Footer />
+
+		<script>
+			function generateTOC() {
+				const toc = document.getElementById('toc');
+				const headings = document.querySelectorAll('.article-content h1, .article-content h2, .article-content h3, .article-content h4, .article-content h5, .article-content h6');
+				
+				if (headings.length === 0) {
+					toc.innerHTML = '<p class="no-headings">此文章沒有標題</p>';
+					return;
+				}
+
+				let tocHTML = '<ul class="toc-list">';
+				
+				headings.forEach((heading, index) => {
+					if (!heading.id) {
+						heading.id = `heading-${index}`;
+					}
+					
+					const level = parseInt(heading.tagName.charAt(1));
+					const text = heading.textContent;
+					const indent = Math.max(0, (level - 1) * 20);
+					
+					tocHTML += `
+						<li class="toc-item toc-level-${level}" style="margin-left: ${indent}px;">
+							<a href="#${heading.id}" class="toc-link">${text}</a>
+						</li>
+					`;
+				});
+				
+				tocHTML += '</ul>';
+				toc.innerHTML = tocHTML;
+
+				const tocLinks = toc.querySelectorAll('.toc-link');
+				tocLinks.forEach(link => {
+					link.addEventListener('click', (e) => {
+						e.preventDefault();
+						const targetId = link.getAttribute('href').substring(1);
+						const targetElement = document.getElementById(targetId);
+						
+						if (targetElement) {
+							const yOffset = - 100;
+							const y = targetElement.getBoundingClientRect().top + window.pageYOffset + yOffset;
+
+							window.scrollTo({
+								top: y,
+								behavior: 'smooth'
+							});
+							
+							history.pushState(null, null, `#${targetId}`);
+						}
+					});
+				});
+			}
+
+			document.addEventListener('DOMContentLoaded', generateTOC);
+			
+			document.addEventListener('astro:page-load', generateTOC);
+		</script>
 	</body>
 </html>

@@ -1,7 +1,7 @@
 ---
 title: HITCON_CMT
 pubDate: 2024-08-29
-description: ''
+description: 'asdasd'
 heroImage: 'hitcon_banner.png'
 tags: [HITCON,HITCON,]
 category: 'Life'
