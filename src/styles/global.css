@@ -61,7 +61,7 @@ h1, h2, h3, h4, h5, h6 {
     line-height: 1.2;
 }
 
-h1 { font-size: clamp(2rem, 6vw, 3rem); }
+h1 { font-size: clamp(1.7rem, 6vw, 2.7rem); }
 h2 { font-size: clamp(1.5rem, 5vw, 2.4rem); }
 h3 { font-size: clamp(1.2rem, 4vw, 1.9rem); }
 
@@ -456,7 +456,6 @@ img {
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
 }
 
-/* ===== 文章內容標題樣式 ===== */
 .article-content h1 {
     color: rgb(var(--black));
     margin: 2.5rem 0 1rem 0;
@@ -619,7 +618,6 @@ img {
     transform: translateY(-50%);
 }
 
-/* 二級無序列表 */
 .article-content ul ul {
     list-style: none;
 }
@@ -637,7 +635,6 @@ img {
     transform: translateY(-50%);
 }
 
-/* 三級無序列表 */
 .article-content ul ul ul {
     list-style: none;
 }
@@ -654,7 +651,6 @@ img {
     top: 0.7rem;
 }
 
-/* 有序列表樣式 */
 .article-content ol {
     counter-reset: list-counter;
 }
@@ -684,7 +680,6 @@ img {
     border: 2px solid rgba(255, 255, 255, 0.1);
 }
 
-/* 二級有序列表 */
 .article-content ol ol {
     counter-reset: list-counter-2;
 }
