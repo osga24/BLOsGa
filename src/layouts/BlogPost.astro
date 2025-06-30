@@ -18,6 +18,7 @@ const { title, description, pubDate, updatedDate, heroImage, category, tags, slu
 	<head>
 		<BaseHead title={title} description={description} />
 		<ViewTransitions/>
+
 	</head>
 
 	<body>
@@ -33,7 +34,7 @@ const { title, description, pubDate, updatedDate, heroImage, category, tags, slu
 						{category && (
 							<>
 								<a href={`/categories/${encodeURIComponent(category)}/`}>{category}</a>
-						<span>/</span>
+								<span>/</span>
 							</>
 						)}
 						<span>{title}</span>
@@ -42,7 +43,7 @@ const { title, description, pubDate, updatedDate, heroImage, category, tags, slu
 					<header class="article-hero">
 						<div class="hero-content">
 							{category && (
-							<span class="article-category">/ {category} /</span>
+								<span class="article-category">/ {category} /</span>
 							)}
 							
 							<h1 class="article-title">{title}</h1>
@@ -80,9 +81,10 @@ const { title, description, pubDate, updatedDate, heroImage, category, tags, slu
 								/>
 							</div>
 						)}
-					<br/>
+						<br/>
 						<div class='article-meta-line'></div>
 					</header>
+
 					<!-- TL;DR -->
 					{description && (
 						<div class="tldr-section">
@@ -95,7 +97,6 @@ const { title, description, pubDate, updatedDate, heroImage, category, tags, slu
 					<div class="article-content">
 						<slot />
 					</div>
-
 
 					<!-- 標籤 -->
 					{tags && tags.length > 0 && (
@@ -120,6 +121,14 @@ const { title, description, pubDate, updatedDate, heroImage, category, tags, slu
 				</aside>
 			</div>
 		</main>
+		
+		<div id="lightbox" class="lightbox">
+			<div class="lightbox-content">
+				<button class="lightbox-close" id="lightbox-close">×</button>
+				<img id="lightbox-image" class="lightbox-image" src="" alt="">
+				<div id="lightbox-caption" class="lightbox-caption"></div>
+			</div>
+		</div>
 		
 		<Footer />
 
@@ -176,9 +185,96 @@ const { title, description, pubDate, updatedDate, heroImage, category, tags, slu
 				});
 			}
 
-			document.addEventListener('DOMContentLoaded', generateTOC);
+			function addImageCaptions() {
+				const images = document.querySelectorAll('.article-content img');
+				
+				images.forEach(img => {
+					if (img.parentElement.classList.contains('image-figure')) {
+						return;
+					}
+					
+					const altText = img.getAttribute('alt');
+					if (altText && altText.trim() !== '') {
+						const figure = document.createElement('figure');
+						figure.className = 'image-figure';
+						
+						const caption = document.createElement('figcaption');
+						caption.className = 'image-caption';
+						caption.textContent = altText;
+						
+						img.parentNode.insertBefore(figure, img);
+						figure.appendChild(img);
+						figure.appendChild(caption);
+					}
+				});
+			}
+
+			function initLightbox() {
+				const lightbox = document.getElementById('lightbox');
+				const lightboxImage = document.getElementById('lightbox-image');
+				const lightboxCaption = document.getElementById('lightbox-caption');
+				const lightboxClose = document.getElementById('lightbox-close');
+				
+				function addImageClickHandlers() {
+					const images = document.querySelectorAll('.article-content img, .hero-img');
+					
+					images.forEach(img => {
+						img.addEventListener('click', (e) => {
+							e.preventDefault();
+							
+							const src = img.src || img.getAttribute('src');
+							const alt = img.alt || '';
+							
+							lightboxImage.src = src;
+							lightboxImage.alt = alt;
+							lightboxCaption.textContent = alt;
+							
+							// 顯示 lightbox
+							lightbox.classList.add('active');
+							document.body.style.overflow = 'hidden';
+						});
+					});
+				}
+
+				function closeLightbox() {
+					lightbox.classList.remove('active');
+					document.body.style.overflow = '';
+					
+					setTimeout(() => {
+						if (!lightbox.classList.contains('active')) {
+							lightboxImage.src = '';
+						}
+					}, 400);
+				}
+
+				lightboxClose.addEventListener('click', closeLightbox);
+				
+				lightbox.addEventListener('click', (e) => {
+					if (e.target === lightbox) {
+						closeLightbox();
+					}
+				});
+
+				document.addEventListener('keydown', (e) => {
+					if (e.key === 'Escape' && lightbox.classList.contains('active')) {
+						closeLightbox();
+					}
+				});
+
+				addImageClickHandlers();
+			}
+
+			document.addEventListener('DOMContentLoaded', () => {
+				addImageCaptions();
+				generateTOC();
+				initLightbox();
+			});
 			
-			document.addEventListener('astro:page-load', generateTOC);
+			document.addEventListener('astro:page-load', () => {
+				addImageCaptions();
+				generateTOC();
+				initLightbox();
+			});
 		</script>
 
 	</body>
