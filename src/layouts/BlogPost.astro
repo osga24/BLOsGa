@@ -1,140 +1,55 @@
 ---
-import type { CollectionEntry } from 'astro:content';
-import BaseHead from '../components/BaseHead.astro';
-import Header from '../components/Header.astro';
-import Footer from '../components/Footer.astro';
-import FormattedDate from '../components/FormattedDate.astro';
-import Lightbox from '../components/Lightbox.astro';
-import BlogUtils from '../components/BlogUtils.astro';
-import Alert from '../components/Alert.astro';
-import { Image } from 'astro:assets';
-import { ViewTransitions } from 'astro:transitions';
-import "../styles/global.css";
-import "../styles/markdown.css";
+import '../styles/global.css';
+import { SITE_TITLE } from '../consts';
+import FallbackImage from '../assets/banner.png';
+import type { ImageMetadata } from 'astro';
 
-type Props = CollectionEntry<'blog'>['data'] & {
-	slug: string;
-};
+interface Props {
+	title: string;
+	description: string;
+	image?: ImageMetadata;
+}
 
-const { title, description, pubDate, updatedDate, heroImage, category, tags, slug } = Astro.props;
+const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+
+const { title, description, image = FallbackImage } = Astro.props;
 ---
 
-<html lang="zh-TW">
-	<head>
-		<BaseHead title={title} description={description} />
-		<ViewTransitions/>
-	</head>
+<!-- Global Metadata -->
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<link rel="icon" type="image/png" href="/favicon.png" />
+<link rel="sitemap" href="/sitemap-index.xml" />
+<link
+	rel="alternate"
+	type="application/rss+xml"
+	title={SITE_TITLE}
+	href={new URL('rss.xml', Astro.site)}
+/>
+<meta name="generator" content={Astro.generator} />
 
-	<body>
-		<Header />
+<!-- Font preloads -->
+<link rel="preload" href="/fonts/atkinson-regular.woff" as="font" type="font/woff" crossorigin />
+<link rel="preload" href="/fonts/atkinson-bold.woff" as="font" type="font/woff" crossorigin />
 
-		<main class="blog-main">
-			<div class="blog-container">
-				<!-- 內容 -->
-				<article class="blog-article">
-					<nav class="breadcrumb">
-						<a href="/">home</a>
-						<span>/</span>
-						{category && (
-						<>
-						<a href={`/categories/${encodeURIComponent(category)}/`}>{category}</a>
-						<span>/</span>
-					</>
-						)}
-						<span>{title}</span>
-					</nav>
+<!-- Canonical URL -->
+<link rel="canonical" href={canonicalURL} />
 
-					<header class="article-hero">
-						<div class="hero-content">
-							{category && (
-							<span class="article-category">/ {category} /</span>
-							)}
+<!-- Primary Meta Tags -->
+<title>{title}</title>
+<meta name="title" content={title} />
+<meta name="description" content={description} />
 
-							<h1 class="article-title">{title}</h1>
+<!-- Open Graph / Facebook -->
+<meta property="og:type" content="website" />
+<meta property="og:url" content={Astro.url} />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:image" content={new URL(image.src, Astro.url)} />
 
-							<div class="article-meta-line">
-								<time class="publish-date">
-									<FormattedDate date={pubDate} />
-								</time>
-								{updatedDate && (
-								<time class="update-date">
-									最後更新於 <FormattedDate date={updatedDate} />
-								</time>
-								)}
-								{tags && tags.length > 0 && (
-								<div class="hero-tags">
-									{tags.slice(0, 3).map(tag => (
-									<span class="tag">#{tag}</span>
-									))}
-									{tags.length > 3 && (
-									<span class="tag more">+{tags.length - 3}</span>
-									)}
-								</div>
-								)}
-							</div>
-						</div>
-
-						{heroImage && (
-						<div class="hero-image">
-							<Image 
-								width={800} 
-								height={400} 
-								src={heroImage} 
-								alt={title}
-								class="hero-img"
-							/>
-						</div>
-						)}
-						<br/>
-						<div class='article-meta-line'></div>
-					</header>
-					
-					<!-- 目錄 -->
-					<aside class="blog-sidebar">
-						<div class="sidebar-section">
-							<h3 class="sidebar-title">目錄</h3>
-							<nav class="table-of-contents" id="toc">
-							</nav>
-						</div>
-					</aside>
-
-					<!-- TL;DR -->
-					{description && (
-					<div class="tldr-section">
-						<h3 class="tldr-title">💡 TL;DR</h3>
-						<p class="tldr-content">{description}</p>
-					</div>
-					)}
-
-					<!-- 文章 -->
-					<div class="article-content">
-						<slot />
-					</div>
-
-					<!-- 標籤 -->
-					{tags && tags.length > 0 && (
-					<footer class="article-footer">
-						<div class="article-tags">
-							<span class="tags-label">tags: </span>
-							{tags.map(tag => (
-							<span class="tag">#{tag}</span>
-							))}
-						</div>
-					</footer>
-					)}
-				</article>
-			</div>
-		</main>
-
-		<Footer />
-
-		<!-- 智能 Lightbox 組件 -->
-		<Lightbox />
-		
-		<!-- 部落格工具組件 -->
-		<BlogUtils />
-		
-		<!-- 統一警告框組件（自動處理 class 和組件方式） -->
-		<Alert />
-	</body>
-</html>
+<!-- Twitter -->
+<meta property="twitter:card" content="summary_large_image" />
+<meta property="twitter:url" content={Astro.url} />
+<meta property="twitter:title" content={title} />
+<meta property="twitter:description" content={description} />
+<meta property="twitter:image" contenhttps://blog.osga.dev/_astro/blog-placeholder-1.Bx0Zcyzv.jpgt={new URL(image.src, Astro.url)} />
