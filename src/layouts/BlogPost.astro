@@ -1,5 +1,6 @@
 ---
 import type { CollectionEntry } from 'astro:content';
+import BaseHead from '../components/BaseHead.astro';
 import Header from '../components/Header.astro';
 import Footer from '../components/Footer.astro';
 import FormattedDate from '../components/FormattedDate.astro';
@@ -7,6 +8,7 @@ import Lightbox from '../components/Lightbox.astro';
 import BlogUtils from '../components/BlogUtils.astro';
 import Alert from '../components/Alert.astro';
 import { Image } from 'astro:assets';
+import { ViewTransitions } from 'astro:transitions';
 import "../styles/global.css";
 import "../styles/markdown.css";
 
@@ -14,7 +16,7 @@ type Props = CollectionEntry<'blog'>['data'] & {
 	slug: string;
 };
 
-const { title, description, pubDate, updatedDate, heroImage, category, tags } = Astro.props;
+const { title, description, pubDate, updatedDate, heroImage, category, tags, slug } = Astro.props;
 ---
 
 <html lang="zh-TW">
@@ -25,8 +27,8 @@ const { title, description, pubDate, updatedDate, heroImage, category, tags } = 
 		<meta property="og:description" content={description} />
 		{heroImage && (
 			<meta property="og:image" content={heroImage} />
-		)}
 		<meta charset="UTF-8" />
+		)}
 	</head>
 
 	<body>
@@ -34,15 +36,16 @@ const { title, description, pubDate, updatedDate, heroImage, category, tags } = 
 
 		<main class="blog-main">
 			<div class="blog-container">
+				<!-- 內容 -->
 				<article class="blog-article">
 					<nav class="breadcrumb">
 						<a href="/">home</a>
 						<span>/</span>
 						{category && (
 						<>
-							<a href={`/categories/${encodeURIComponent(category)}/`}>{category}</a>
-							<span>/</span>
-						</>
+						<a href={`/categories/${encodeURIComponent(category)}/`}>{category}</a>
+						<span>/</span>
+					</>
 						)}
 						<span>{title}</span>
 					</nav>
@@ -88,12 +91,33 @@ const { title, description, pubDate, updatedDate, heroImage, category, tags } = 
 							/>
 						</div>
 						)}
+						<br/>
+						<div class='article-meta-line'></div>
 					</header>
+					
+					<!-- 目錄 -->
+					<aside class="blog-sidebar">
+						<div class="sidebar-section">
+							<h3 class="sidebar-title">目錄</h3>
+							<nav class="table-of-contents" id="toc">
+							</nav>
+						</div>
+					</aside>
 
+					<!-- TL;DR -->
+					{description && (
+					<div class="tldr-section">
+						<h3 class="tldr-title">💡 TL;DR</h3>
+						<p class="tldr-content">{description}</p>
+					</div>
+					)}
+
+					<!-- 文章 -->
 					<div class="article-content">
 						<slot />
 					</div>
 
+					<!-- 標籤 -->
 					{tags && tags.length > 0 && (
 					<footer class="article-footer">
 						<div class="article-tags">
@@ -110,8 +134,13 @@ const { title, description, pubDate, updatedDate, heroImage, category, tags } = 
 
 		<Footer />
 
+		<!-- 智能 Lightbox 組件 -->
 		<Lightbox />
+		
+		<!-- 部落格工具組件 -->
 		<BlogUtils />
+		
+		<!-- 統一警告框組件（自動處理 class 和組件方式） -->
 		<Alert />
 	</body>
 </html>
