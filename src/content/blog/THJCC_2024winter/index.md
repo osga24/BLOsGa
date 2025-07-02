@@ -41,7 +41,7 @@ language: ''
 
 ![](curl.png)
 
-> 敲敲話：當初想說出一款遊戲可以讓被題目折磨的參賽者可以休閒一下 XD
+<div class="info">敲敲話：當初想說出一款遊戲可以讓被題目折磨的參賽者可以休閒一下 XD</div> 
 
 ### Discord 0x2:
 > 使用 get_flag 指令獲取 FLAG，對相信我

@@ -1,0 +1,309 @@
+---
+---
+
+<div id="lightbox" class="lightbox">
+	<div class="lightbox-content">
+		<img id="lightbox-image" class="lightbox-image" src="" alt="">
+		<button class="lightbox-close" id="lightbox-close" aria-label="關閉">×</button>
+		<div id="lightbox-caption" class="lightbox-caption"></div>
+	</div>
+</div>
+
+<script>
+class SmartLightbox {
+	constructor() {
+		this.lightbox = null;
+		this.lightboxImage = null;
+		this.lightboxCaption = null;
+		this.lightboxClose = null;
+		this.currentImage = null;
+		this.isInitialized = false;
+		this.retryCount = 0;
+		this.maxRetries = 10;
+		
+		this.init();
+	}
+
+	init() {
+		this.waitForElements(() => {
+			this.setupElements();
+			this.bindEvents();
+			this.isInitialized = true;
+		});
+	}
+
+	waitForElements(callback) {
+		const checkElements = () => {
+			this.lightbox = document.getElementById('lightbox');
+			this.lightboxImage = document.getElementById('lightbox-image');
+			this.lightboxCaption = document.getElementById('lightbox-caption');
+			this.lightboxClose = document.getElementById('lightbox-close');
+			
+			if (this.lightbox && this.lightboxImage && this.lightboxCaption && this.lightboxClose) {
+				callback();
+			} else {
+				this.retryCount++;
+				if (this.retryCount < this.maxRetries) {
+					setTimeout(checkElements, 100);
+				}
+			}
+		};
+		
+		checkElements();
+	}
+
+	setupElements() {
+		if (this.lightbox) {
+			this.lightbox.style.display = 'none';
+			this.lightbox.classList.remove('active');
+		}
+		
+		if (this.lightboxImage) {
+			this.lightboxImage.src = '';
+			this.lightboxImage.removeAttribute('data-orientation');
+		}
+	}
+
+	bindEvents() {
+		if (!this.lightbox || !this.lightboxClose) return;
+
+		this.unbindEvents();
+
+		this.closeHandler = () => this.closeLightbox();
+		this.lightboxClose.addEventListener('click', this.closeHandler);
+
+		this.backgroundClickHandler = (e) => {
+			if (e.target === this.lightbox) {
+				this.closeLightbox();
+			}
+		};
+		this.lightbox.addEventListener('click', this.backgroundClickHandler);
+
+		this.keydownHandler = (e) => {
+			if (e.key === 'Escape' && this.lightbox.classList.contains('active')) {
+				this.closeLightbox();
+			}
+		};
+		document.addEventListener('keydown', this.keydownHandler);
+
+		this.wheelHandler = (e) => {
+			if (this.lightbox.classList.contains('active')) {
+				e.preventDefault();
+			}
+		};
+		this.lightbox.addEventListener('wheel', this.wheelHandler, { passive: false });
+
+		this.addImageClickHandlers();
+	}
+
+	unbindEvents() {
+		if (this.lightboxClose && this.closeHandler) {
+			this.lightboxClose.removeEventListener('click', this.closeHandler);
+		}
+		
+		if (this.lightbox && this.backgroundClickHandler) {
+			this.lightbox.removeEventListener('click', this.backgroundClickHandler);
+		}
+		
+		if (this.keydownHandler) {
+			document.removeEventListener('keydown', this.keydownHandler);
+		}
+		
+		if (this.lightbox && this.wheelHandler) {
+			this.lightbox.removeEventListener('wheel', this.wheelHandler);
+		}
+
+		this.removeImageClickHandlers();
+	}
+
+	addImageClickHandlers() {
+		const waitForImages = () => {
+			const images = document.querySelectorAll('.article-content img, .hero-img');
+			
+			if (images.length === 0) {
+				setTimeout(waitForImages, 200);
+				return;
+			}
+
+			images.forEach(img => {
+				if (img._lightboxHandler) {
+					img.removeEventListener('click', img._lightboxHandler);
+				}
+				
+				img._lightboxHandler = (e) => {
+					e.preventDefault();
+					e.stopPropagation();
+					
+					if (!this.isInitialized) return;
+					
+					this.openLightbox(img);
+				};
+				
+				img.addEventListener('click', img._lightboxHandler);
+				img.style.cursor = 'zoom-in';
+				img.title = img.alt || '點擊放大圖片';
+			});
+		};
+
+		waitForImages();
+	}
+
+	removeImageClickHandlers() {
+		const images = document.querySelectorAll('.article-content img, .hero-img');
+		images.forEach(img => {
+			if (img._lightboxHandler) {
+				img.removeEventListener('click', img._lightboxHandler);
+				img._lightboxHandler = null;
+			}
+		});
+	}
+
+	openLightbox(imgElement) {
+		if (!this.isInitialized || !this.lightbox || !this.lightboxImage) return;
+
+		const src = imgElement.src || imgElement.getAttribute('src');
+		const alt = imgElement.alt || '';
+		
+		if (!src) return;
+		
+		this.lightboxImage.src = src;
+		this.lightboxImage.alt = alt;
+		
+		if (alt && alt.trim() !== '') {
+			this.lightboxCaption.textContent = alt;
+			this.lightboxCaption.style.display = 'block';
+		} else {
+			this.lightboxCaption.style.display = 'none';
+		}
+
+		this.lightboxImage.onload = () => {
+			this.detectOrientation(this.lightboxImage);
+		};
+
+		if (this.lightboxImage.complete && this.lightboxImage.naturalWidth > 0) {
+			this.detectOrientation(this.lightboxImage);
+		}
+
+		// 直接顯示，無動畫
+		this.lightbox.style.display = 'flex';
+		this.lightbox.classList.add('active');
+		document.body.style.overflow = 'hidden';
+		
+		this.currentImage = imgElement;
+	}
+
+	detectOrientation(imgElement) {
+		if (!imgElement.naturalWidth || !imgElement.naturalHeight) return;
+
+		const aspectRatio = imgElement.naturalWidth / imgElement.naturalHeight;
+		let orientation;
+
+		if (aspectRatio > 2.5) {
+			orientation = 'ultrawide';
+		} else if (aspectRatio < 0.4) {
+			orientation = 'ultratall';
+		} else if (aspectRatio > 1.3) {
+			orientation = 'landscape';
+		} else if (aspectRatio < 0.7) {
+			orientation = 'portrait';
+		} else {
+			orientation = 'square';
+		}
+
+		imgElement.setAttribute('data-orientation', orientation);
+	}
+
+	closeLightbox() {
+		if (!this.lightbox) return;
+
+		// 直接關閉，無動畫
+		this.lightbox.classList.remove('active');
+		this.lightbox.style.display = 'none';
+		document.body.style.overflow = '';
+		
+		if (this.lightboxImage) {
+			this.lightboxImage.src = '';
+			this.lightboxImage.removeAttribute('data-orientation');
+		}
+		
+		this.currentImage = null;
+	}
+
+	reinit() {
+		this.isInitialized = false;
+		this.retryCount = 0;
+		this.unbindEvents();
+		this.init();
+	}
+
+	updateAllImages() {
+		const images = document.querySelectorAll('.article-content img, .hero-img');
+		images.forEach(img => {
+			if (img.complete && img.naturalWidth > 0) {
+				this.detectOrientation(img);
+			} else {
+				img.onload = () => {
+					this.detectOrientation(img);
+				};
+			}
+		});
+	}
+
+	destroy() {
+		this.unbindEvents();
+		this.isInitialized = false;
+		this.currentImage = null;
+	}
+}
+
+let lightboxInitTimeout;
+
+function initSmartLightbox() {
+	if (lightboxInitTimeout) {
+		clearTimeout(lightboxInitTimeout);
+	}
+	
+	if (window.smartLightbox) {
+		window.smartLightbox.destroy();
+		window.smartLightbox = null;
+	}
+	
+	lightboxInitTimeout = setTimeout(() => {
+		window.smartLightbox = new SmartLightbox();
+		
+		setTimeout(() => {
+			if (window.smartLightbox && window.smartLightbox.isInitialized) {
+				window.smartLightbox.updateAllImages();
+			}
+		}, 1000);
+	}, 100);
+}
+
+if (document.readyState === 'loading') {
+	document.addEventListener('DOMContentLoaded', initSmartLightbox);
+} else {
+	initSmartLightbox();
+}
+
+document.addEventListener('astro:page-load', initSmartLightbox);
+
+window.addEventListener('beforeunload', () => {
+	if (window.smartLightbox) {
+		window.smartLightbox.destroy();
+	}
+});
+
+window.detectImageOrientation = function(imgElement) {
+	if (window.smartLightbox && window.smartLightbox.isInitialized) {
+		window.smartLightbox.detectOrientation(imgElement);
+	}
+};
+
+window.refreshLightbox = function() {
+	if (window.smartLightbox) {
+		window.smartLightbox.reinit();
+	} else {
+		initSmartLightbox();
+	}
+};
+</script>

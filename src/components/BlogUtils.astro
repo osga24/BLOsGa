@@ -1,0 +1,98 @@
+---
+// BlogUtils.astro
+// 部落格相關工具功能：目錄生成、圖片說明文字
+---
+
+<script>
+// ========== 目錄生成 ==========
+function generateTOC() {
+	const toc = document.getElementById('toc');
+	if (!toc) return;
+	
+	const headings = document.querySelectorAll('.article-content h1, .article-content h2, .article-content h3, .article-content h4, .article-content h5, .article-content h6');
+
+	if (headings.length === 0) {
+		toc.innerHTML = '<p class="no-headings">此文章沒有標題</p>';
+		return;
+	}
+
+	let tocHTML = '<ul class="toc-list">';
+
+	headings.forEach((heading, index) => {
+		if (!heading.id) {
+			heading.id = `heading-${index}`;
+		}
+
+		const level = parseInt(heading.tagName.charAt(1));
+		const text = heading.textContent;
+		const indent = Math.max(0, (level - 1) * 20);
+
+		tocHTML += `
+			<li class="toc-item toc-level-${level}" style="margin-left: ${indent}px;">
+				<a href="#${heading.id}" class="toc-link">${text}</a>
+			</li>
+		`;
+	});
+
+	tocHTML += '</ul>';
+	toc.innerHTML = tocHTML;
+
+	const tocLinks = toc.querySelectorAll('.toc-link');
+	tocLinks.forEach(link => {
+		link.addEventListener('click', (e) => {
+			e.preventDefault();
+			const targetId = link.getAttribute('href').substring(1);
+			const targetElement = document.getElementById(targetId);
+
+			if (targetElement) {
+				const yOffset = -100;
+				const y = targetElement.getBoundingClientRect().top + window.pageYOffset + yOffset;
+
+				window.scrollTo({
+					top: y,
+					behavior: 'smooth'
+				});
+
+				history.pushState(null, null, `#${targetId}`);
+			}
+		});
+	});
+}
+
+// ========== 圖片說明文字 ==========
+function addImageCaptions() {
+	const images = document.querySelectorAll('.article-content img');
+
+	images.forEach(img => {
+		if (img.parentElement.classList.contains('image-figure')) {
+			return;
+		}
+
+		const altText = img.getAttribute('alt');
+		if (altText && altText.trim() !== '') {
+			const figure = document.createElement('figure');
+			figure.className = 'image-figure';
+
+			const caption = document.createElement('figcaption');
+			caption.className = 'image-caption';
+			caption.textContent = altText;
+
+			img.parentNode.insertBefore(figure, img);
+			figure.appendChild(img);
+			figure.appendChild(caption);
+		}
+	});
+}
+
+// ========== 初始化部落格工具 ==========
+function initBlogUtils() {
+	addImageCaptions();
+	generateTOC();
+}
+
+// ========== 事件監聽 ==========
+document.addEventListener('DOMContentLoaded', initBlogUtils);
+
+// Astro 頁面轉換支援
+document.addEventListener('astro:page-load', initBlogUtils);
+</script>

@@ -9,14 +9,14 @@ import "../../styles/global.css";
 import { getCollection } from 'astro:content';
 
 export async function getStaticPaths() {
-    const posts = await getCollection('blog');
-    
-    const categories = [...new Set(posts.map(post => post.data.category).filter(Boolean))];
-    
-    return categories.map(category => ({
-        params: { category: encodeURIComponent(category) },
-        props: { category }
-    }));
+	const posts = await getCollection('blog');
+
+	const categories = [...new Set(posts.map(post => post.data.category).filter(Boolean))];
+
+	return categories.map(category => ({
+		params: { category: encodeURIComponent(category) },
+		props: { category }
+	}));
 }
 
 const { category } = Astro.props;
@@ -24,8 +24,8 @@ const decodedCategory = decodeURIComponent(category);
 
 const allPosts = await getCollection('blog');
 const categoryPosts = allPosts
-    .filter(post => post.data.category === decodedCategory)
-    .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+.filter(post => post.data.category === decodedCategory)
+.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 
 const pageTitle = `${decodedCategory} - ${SITE_TITLE}`;
 const pageDescription = `瀏覽「${decodedCategory}」分類下的 ${categoryPosts.length} 篇文章`;
@@ -33,288 +33,90 @@ const pageDescription = `瀏覽「${decodedCategory}」分類下的 ${categoryPo
 
 <!doctype html>
 <html lang="zh-TW">
-    <head>
-        <BaseHead title={pageTitle} description={pageDescription} />
-        <ViewTransitions/>
-    </head>
-    <body>
-        <Header />
-        
-        <main>
-            <nav class="breadcrumb">
-                <span>/</span>
-                <a href="/">home</a>
-                <span>/</span>
-                <a href="/categories/">categories</a>
-                <span>/</span>
-                <span>{decodedCategory}</span>
-            </nav>
+	<head>
+		<BaseHead title={pageTitle} description={pageDescription} />
+		<ViewTransitions/>
+	</head>
+	<body>
+		<Header />
 
-            <section class="hero-section">
-                <h1 class="gradient-text">{decodedCategory}</h1>
-                <p class="hero-description">
-                    {categoryPosts.length} 篇文章
-                </p>
-                <div class="hero-divider"></div>
-            </section>
+		<main>
+			<nav class="breadcrumb">
+				<span>/</span>
+				<a href="/">home</a>
+				<span>/</span>
+				<a href="/categories/">categories</a>
+				<span>/</span>
+				<span>{decodedCategory}</span>
+			</nav>
 
-            {categoryPosts.length > 0 ? (
-                <div class="posts-grid">
-                    {categoryPosts.map((post) => (
-                        <article class="post-card card">
-                            <a href={`/blog/${post.slug}/`} class="post-link">
-                                {post.data.heroImage && (
-                                    <div class="post-image-container">
-                                        <img
-                                            class="post-image"
-                                            width={post.data.heroImage.width}
-                                            height={post.data.heroImage.height}
-                                            src={post.data.heroImage.src}
-                                            alt={post.data.title}
-                                            loading="lazy"
-                                            decoding="async"
-                                        />
-                                    </div>
-                                )}
-                                
-                                <div class="post-content">
-                                    <h3 class="post-title">
-                                        {post.data.title}
-                                    </h3>
+			<section class="hero-section">
+				<h1 class="gradient-text">{decodedCategory}</h1>
+				<p class="hero-description">
+					{categoryPosts.length} 篇文章
+				</p>
+				<div class="hero-divider"></div>
+			</section>
 
-                                    {post.data.description && (
-                                        <p class="post-description">
-                                            {post.data.description}
-                                        </p>
-                                    )}
+			{categoryPosts.length > 0 ? (
+			<div class="posts-grid">
+				{categoryPosts.map((post) => (
+				<article class="post-card card">
+					<a href={`/blog/${post.slug}/`} class="post-link">
+						{post.data.heroImage && (
+						<div class="post-image-container">
+							<img
+								class="post-image"
+								width={post.data.heroImage.width}
+								height={post.data.heroImage.height}
+								src={post.data.heroImage.src}
+								alt={post.data.title}
+								loading="lazy"
+								decoding="async"
+							/>
+						</div>
+						)}
 
-                                    <div class="post-meta">
-                                        <div class="post-tags">
-                                            {post.data.tags && post.data.tags.slice(0, 3).map(tag => (
-                                                <span>#{tag}</span>
-                                            ))}
-                                            {post.data.tags && post.data.tags.length > 3 && (
-                                                <span class="tag-more">+{post.data.tags.length - 3}</span>
-                                            )}
-                                        </div>
-                                        
-                                        <time class="post-date">
-                                            <FormattedDate date={post.data.pubDate} />
-                                        </time>
-                                    </div>
-                                </div>
-                            </a>
-                        </article>
-                    ))}
-                </div>
-            ) : (
-                <div class="empty-state">
-                    <div class="empty-icon">📄</div>
-                    <h3>此分類暫無文章</h3>
-                    <p>「{decodedCategory}」分類下還沒有文章</p>
-                </div>
-            )}
-        </main>
-        
-        <Footer />
+						<div class="post-content">
+							<h3 class="post-title">
+								{post.data.title}
+							</h3>
 
-        <style>
-            /* 分類頁面專用樣式 */
-            .breadcrumb {
-                display: flex;
-                align-items: center;
-                gap: 0.5rem;
-                margin-bottom: 2rem;
-                font-size: 0.9rem;
-                color: rgb(var(--gray));
-            }
+							{post.data.description && (
+							<p class="post-description">
+								{post.data.description}
+							</p>
+							)}
 
-            .breadcrumb a {
-                color: rgb(var(--gray));
-                text-decoration: none;
-                transition: color 0.3s ease;
-            }
+							<div class="post-meta">
+								<div class="post-tags">
+									{post.data.tags && post.data.tags.slice(0, 3).map(tag => (
+									<span>#{tag}</span>
+									))}
+									{post.data.tags && post.data.tags.length > 3 && (
+									<span class="tag-more">+{post.data.tags.length - 3}</span>
+									)}
+								</div>
 
-            .breadcrumb a:hover {
-                color: var(--accent);
-            }
+								<time class="post-date">
+									<FormattedDate date={post.data.pubDate} />
+								</time>
+							</div>
+						</div>
+					</a>
+				</article>
+				))}
+			</div>
+			) : (
+			<div class="empty-state">
+				<div class="empty-icon">📄</div>
+				<h3>此分類暫無文章</h3>
+				<p>「{decodedCategory}」分類下還沒有文章</p>
+			</div>
+			)}
+		</main>
 
-            .breadcrumb span:last-child {
-                color: rgb(var(--black));
-                font-weight: 600;
-            }
+		<Footer />
 
-            /* 分類頁面文章網格 - 自然高度版本 */
-            .posts-grid {
-                display: grid;
-                grid-template-columns: repeat(3, 1fr);
-                gap: 2rem;
-                margin-bottom: 3rem;
-                align-items: start;
-            }
-
-            .post-card {
-                display: flex;
-                flex-direction: column;
-                height: auto;
-            }
-
-            .post-link {
-                display: flex;
-                flex-direction: column;
-                color: inherit;
-                text-decoration: none;
-                height: 100%;
-            }
-
-            .post-image-container {
-                margin: -1.5rem -1.5rem 1.5rem -1.5rem;
-                overflow: hidden;
-                border-radius: 16px;
-                background: linear-gradient(45deg, #667eea, #764ba2);
-                min-height: 180px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                position: relative;
-            }
-
-            .post-image-container::before {
-                content: '';
-                position: absolute;
-                top: 0;
-                left: 0;
-                right: 0;
-                bottom: 0;
-                background: linear-gradient(135deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.3) 100%);
-                z-index: 1;
-            }
-
-            .post-image {
-                width: 100%;
-                height: 180px;
-                object-fit: cover;
-                transition: transform 0.3s ease;
-                position: relative;
-                z-index: 2;
-            }
-
-            .post-card:hover .post-image {
-                transform: scale(1.05);
-            }
-
-            .post-image-container:empty {
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #667eea 100%);
-                background-size: 400% 400%;
-                animation: gradient-shift 8s ease infinite;
-            }
-
-            @keyframes gradient-shift {
-                0% { background-position: 0% 50%; }
-                50% { background-position: 100% 50%; }
-                100% { background-position: 0% 50%; }
-            }
-
-            .post-content {
-                flex: 1;
-                display: flex;
-                flex-direction: column;
-            }
-
-            .post-title {
-                color: rgb(var(--black));
-                font-size: 1.25rem;
-                font-weight: 700;
-                margin: 0 0 1rem 0;
-                line-height: 1.3;
-                transition: color 0.3s ease;
-            }
-
-            .post-card:hover .post-title {
-                color: var(--accent);
-            }
-
-            .post-description {
-                color: rgb(var(--gray));
-                font-size: 0.9rem;
-                line-height: 1.5;
-                margin-bottom: auto;
-            }
-
-            .post-meta {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                gap: 1rem;
-                padding-top: 1rem;
-                border-top: 1px solid rgb(var(--border));
-                margin-top: 1rem;
-            }
-
-            .post-tags {
-                display: flex;
-                gap: 0.5rem;
-                flex: 1;
-            }
-
-            .post-tags span {
-                font-size: 0.7rem;
-                padding: 0.3rem 0.6rem;
-                border-radius: 6px;
-                background-color: transparent;
-                color: white;
-                font-weight: 400;
-                transition: all 0.2s ease;
-            }
-
-            .post-tags span:hover {
-                background-color: rgba(var(--bg-hover), 0.6);
-            }
-
-            .tag-more {
-                background-color: transparent !important;
-                color: rgb(var(--gray)) !important;
-            }
-
-            .post-date {
-                font-size: 0.8rem;
-                color: rgb(var(--text-muted));
-            }
-
-            @media (max-width: 720px) {
-                .breadcrumb {
-                    font-size: 0.8rem;
-                    margin-bottom: 1.5rem;
-                }
-                
-                .posts-grid {
-                    grid-template-columns: 1fr;
-                    gap: 1.5rem;
-                }
-                
-                .post-title {
-                    font-size: 1.25rem;
-                }
-                
-                .post-description {
-                    font-size: 0.9rem;
-                }
-                
-                .post-meta {
-                    flex-direction: column;
-                    align-items: flex-start;
-                }
-                
-                .post-date {
-                    align-self: flex-end;
-                }
-            }
-
-            @media (max-width: 900px) and (min-width: 721px) {
-                .posts-grid {
-                    grid-template-columns: repeat(2, 1fr);
-                }
-            }
-        </style>
-    </body>
+	</body>
 </html>

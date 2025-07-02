@@ -52,11 +52,12 @@ Day1 早上在等接駁車的時候隨口對 [堇姬 Naup](https://naupjjin.gith
 這邊附上被 10memes 做成的梗圖w [貼文傳送門](https://www.facebook.com/share/p/Hq4ZdseU4WYKNoz2/)
 ![](10memes.png)
 
-:::note
+
+<div class='info'>
 
 [直播紀錄檔在這邊](https://www.facebook.com/share/v/AEQYwBZ1ACS2A1iA/)，每個議程都非常有趣，推薦大家多刷幾次
+</div>
 
-:::
 
 # 趣事
 - badge 真的超好玩的，換分數認識到好多人，幾乎在會場每個人都這樣

@@ -1,0 +1,720 @@
+---
+
+export interface Props {
+  type?: 'info' | 'note' | 'warning' | 'danger' | 'success' | 'tip';
+  title?: string;
+  icon?: string;
+  collapsible?: boolean;
+}
+
+const { 
+  type = 'info', 
+  title, 
+  icon,
+  collapsible = false 
+} = Astro.props;
+
+const alertConfig = {
+  info: {
+    icon: 'ℹ️',
+    label: 'Info',
+    bgColor: 'rgba(65,118,144,0.08)',
+    borderColor: '#417690',
+    textColor: '#4A90A0',
+  },
+  note: {
+    icon: '📝',
+    label: 'Note', 
+    bgColor: 'rgba(110,90,135,0.08)',
+    borderColor: '#6E5A87',
+    textColor: '#816A9A',
+  },
+  warning: {
+    icon: '⚠️',
+    label: 'Warning',
+    bgColor: 'rgba(176,136,64,0.08)',
+    borderColor: '#B08840',
+    textColor: '#C19A4C',
+  },
+  danger: {
+    icon: '🚨',
+    label: 'Danger',
+    bgColor: 'rgba(166,90,90,0.08)',
+    borderColor: '#A65A5A',
+    textColor: '#B86B6B',
+  },
+  success: {
+    icon: '✅',
+    label: 'Success',
+    bgColor: 'rgba(76,128,88,0.08)',
+    borderColor: '#4C8058',
+    textColor: '#5E916A',
+  },
+  tip: {
+    icon: '💡',
+    label: 'Tip',
+    bgColor: 'rgba(80,120,106,0.08)',
+    borderColor: '#50786A',
+    textColor: '#608878',
+  },
+};
+
+const config = alertConfig[type];
+const displayIcon = icon || config.icon;
+const displayTitle = title || config.label;
+---
+
+<div 
+  class={`alert alert-${type}`}
+  style={`
+    border-color: ${config.borderColor};
+    background: linear-gradient(135deg, ${config.bgColor}, ${config.bgColor.replace('0.08', '0.04')});
+    color: ${config.textColor};
+  `}
+>
+  {collapsible ? (
+    <details class="alert-collapsible">
+      <summary class="alert-header">
+        <span class="alert-icon">{displayIcon}</span>
+        <span class="alert-title">{displayTitle}</span>
+        <span class="alert-chevron">▼</span>
+      </summary>
+      <div class="alert-body">
+        <slot />
+      </div>
+    </details>
+  ) : (
+    <div class="alert-content">
+      <div class="alert-header">
+        <span class="alert-icon">{displayIcon}</span>
+        <span class="alert-title">{displayTitle}</span>
+      </div>
+      <div class="alert-body">
+        <slot />
+      </div>
+    </div>
+  )}
+</div>
+
+<script>
+class UnifiedAlertProcessor {
+    constructor() {
+        this.alertTypes = ['info', 'note', 'warning', 'danger', 'success', 'tip'];
+        this.observer = null;
+        this.init();
+    }
+
+    init() {
+        // 等待 DOM 完全載入
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => this.processAll());
+        } else {
+            this.processAll();
+        }
+
+        this.setupObserver();
+    }
+
+    processAll() {
+        // 1. 清理空的警告框
+        this.cleanupEmptyAlerts();
+        
+        // 2. 處理 class 方式的警告框
+        this.processClassAlerts();
+        
+        // 3. 處理組件方式的警告框
+        this.processComponentAlerts();
+    }
+
+    cleanupEmptyAlerts() {
+        // 清理空的 class 警告框
+        this.alertTypes.forEach(type => {
+            const alerts = document.querySelectorAll(`.article-content .${type}:not([data-alert-processed])`);
+            alerts.forEach(alert => {
+                const textContent = alert.textContent?.trim();
+                if (!textContent) {
+                    alert.remove();
+                }
+            });
+        });
+
+        // 清理空的組件警告框
+        const componentAlerts = document.querySelectorAll('.alert:not([data-alert-processed])');
+        componentAlerts.forEach(alert => {
+            const alertBody = alert.querySelector('.alert-body');
+            if (alertBody && !alertBody.textContent?.trim()) {
+                alert.remove();
+            }
+        });
+    }
+
+    processClassAlerts() {
+        this.alertTypes.forEach(type => {
+            const alerts = document.querySelectorAll(`.article-content .${type}:not([data-alert-processed])`);
+            alerts.forEach(alert => this.convertClassAlert(alert, type));
+        });
+    }
+
+    convertClassAlert(alertElement, type) {
+        try {
+            // 獲取原始內容
+            const rawContent = this.extractTextContent(alertElement);
+            
+            if (!rawContent.trim()) {
+                alertElement.remove();
+                return;
+            }
+
+            // 獲取配置
+            const config = this.getAlertConfig(type);
+            
+            // 創建新的 HTML 結構
+            const newHTML = this.createAlertHTML(type, config, rawContent);
+            
+            // 替換內容
+            alertElement.outerHTML = newHTML;
+            
+        } catch (error) {
+            console.warn('Error converting class alert:', error);
+        }
+    }
+
+    processComponentAlerts() {
+        const componentAlerts = document.querySelectorAll('.alert:not([data-alert-processed])');
+        componentAlerts.forEach(alert => {
+            const alertBody = alert.querySelector('.alert-body');
+            if (alertBody) {
+                this.processMarkdownInElement(alertBody);
+                alert.setAttribute('data-alert-processed', 'true');
+            }
+        });
+    }
+
+    extractTextContent(element) {
+        // 如果已經包含 HTML，轉換為 Markdown
+        const htmlContent = element.innerHTML;
+        if (/<[^>]+>/.test(htmlContent)) {
+            return this.htmlToMarkdown(element);
+        }
+        
+        // 否則直接使用文字內容
+        return element.textContent || element.innerText || '';
+    }
+
+    htmlToMarkdown(element) {
+        let result = '';
+        
+        element.childNodes.forEach(node => {
+            if (node.nodeType === 3) { // Text node
+                result += node.textContent;
+            } else if (node.nodeType === 1) { // Element node
+                const tagName = node.tagName.toLowerCase();
+                const content = this.htmlToMarkdown(node);
+                
+                switch (tagName) {
+                    case 'br':
+                        result += '\n';
+                        break;
+                    case 'p':
+                        result += content + '\n\n';
+                        break;
+                    case 'strong':
+                    case 'b':
+                        result += `**${content}**`;
+                        break;
+                    case 'em':
+                    case 'i':
+                        result += `*${content}*`;
+                        break;
+                    case 'code':
+                        result += `\`${content}\``;
+                        break;
+                    case 'pre':
+                        result += `\n\`\`\`\n${content}\n\`\`\`\n`;
+                        break;
+                    case 'a':
+                        const href = node.getAttribute('href');
+                        result += href ? `[${content}](${href})` : content;
+                        break;
+                    case 'ul':
+                    case 'ol':
+                        result += '\n' + content;
+                        break;
+                    case 'li':
+                        result += '- ' + content + '\n';
+                        break;
+                    default:
+                        result += content;
+                }
+            }
+        });
+        
+        return result.trim();
+    }
+
+    getAlertConfig(type) {
+        const configs = {
+            info: { icon: 'ℹ️', label: 'Info', borderColor: '#417690', textColor: '#4A90A0', bgColor: 'rgba(65,118,144,0.08)' },
+            note: { icon: '📝', label: 'Note', borderColor: '#6E5A87', textColor: '#816A9A', bgColor: 'rgba(110,90,135,0.08)' },
+            warning: { icon: '⚠️', label: 'Warning', borderColor: '#B08840', textColor: '#C19A4C', bgColor: 'rgba(176,136,64,0.08)' },
+            danger: { icon: '🚨', label: 'Danger', borderColor: '#A65A5A', textColor: '#B86B6B', bgColor: 'rgba(166,90,90,0.08)' },
+            success: { icon: '✅', label: 'Success', borderColor: '#4C8058', textColor: '#5E916A', bgColor: 'rgba(76,128,88,0.08)' },
+            tip: { icon: '💡', label: 'Tip', borderColor: '#50786A', textColor: '#608878', bgColor: 'rgba(80,120,106,0.08)' }
+        };
+        return configs[type] || configs.info;
+    }
+
+    createAlertHTML(type, config, content) {
+        const processedContent = this.processMarkdown(content);
+        
+        return `
+            <div class="alert alert-${type}" 
+                 style="border-color: ${config.borderColor}; background: linear-gradient(135deg, ${config.bgColor}, ${config.bgColor.replace('0.08', '0.04')}); color: ${config.textColor};"
+                 data-alert-processed="true">
+                <div class="alert-content">
+                    <div class="alert-header">
+                        <span class="alert-icon">${config.icon}</span>
+                        <span class="alert-title">${config.label}</span>
+                    </div>
+                    <div class="alert-body">
+                        ${processedContent}
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    processMarkdownInElement(element) {
+        const content = this.extractTextContent(element);
+        if (content.trim()) {
+            const processedContent = this.processMarkdown(content);
+            element.innerHTML = processedContent;
+        }
+    }
+
+    processMarkdown(text) {
+        let html = text.trim();
+        if (!html) return '';
+
+        // 1. 保護程式碼區塊
+        const codeBlocks = [];
+        html = html.replace(/```(\w*)\n?([\s\S]*?)```/g, (match, lang, code) => {
+            const placeholder = `__CODE_BLOCK_${codeBlocks.length}__`;
+            codeBlocks.push({ lang: lang.trim() || 'text', code: code.trim() });
+            return placeholder;
+        });
+
+        // 2. 保護行內程式碼
+        const inlineCodes = [];
+        html = html.replace(/`([^`\n]+)`/g, (match, code) => {
+            const placeholder = `__INLINE_CODE_${inlineCodes.length}__`;
+            inlineCodes.push(code);
+            return placeholder;
+        });
+
+        // 3. 處理連結
+        html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>');
+        html = html.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener noreferrer">$1</a>');
+        
+        // 4. 處理文字格式
+        html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+        html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+        html = html.replace(/~~(.*?)~~/g, '<del>$1</del>');
+        html = html.replace(/==(.*?)==/g, '<mark>$1</mark>');
+        html = html.replace(/\[\[([^\]]+)\]\]/g, '<kbd>$1</kbd>');
+        
+        // 5. 處理引用
+        html = html.replace(/^>\s*(.+)$/gm, '<blockquote>$1</blockquote>');
+        
+        // 6. 處理列表
+        html = this.processLists(html);
+        
+        // 7. 處理段落
+        html = this.processParagraphs(html);
+        
+        // 8. 恢復程式碼區塊
+        codeBlocks.forEach((block, index) => {
+            const codeHtml = `<pre><code class="language-${block.lang}">${this.escapeHtml(block.code)}</code></pre>`;
+            html = html.replace(`__CODE_BLOCK_${index}__`, codeHtml);
+        });
+        
+        // 9. 恢復行內程式碼
+        inlineCodes.forEach((code, index) => {
+            html = html.replace(`__INLINE_CODE_${index}__`, `<code>${this.escapeHtml(code)}</code>`);
+        });
+        
+        return html;
+    }
+
+    processLists(html) {
+        const lines = html.split('\n');
+        const result = [];
+        let currentList = null;
+        let listItems = [];
+        
+        for (const line of lines) {
+            const trimmed = line.trim();
+            
+            // 任務列表
+            const taskMatch = trimmed.match(/^-\s*\[([ xX])\]\s+(.+)/);
+            if (taskMatch) {
+                const checked = taskMatch[1].toLowerCase() === 'x' ? 'checked' : '';
+                const item = `<li class="task-list-item"><input type="checkbox" ${checked} disabled> ${taskMatch[2]}</li>`;
+                
+                if (currentList !== 'task') {
+                    if (currentList) result.push(this.wrapList(currentList, listItems));
+                    currentList = 'task';
+                    listItems = [];
+                }
+                listItems.push(item);
+                continue;
+            }
+            
+            // 無序列表
+            const unorderedMatch = trimmed.match(/^[-*+]\s+(.+)/);
+            if (unorderedMatch) {
+                const item = `<li>${unorderedMatch[1]}</li>`;
+                
+                if (currentList !== 'ul') {
+                    if (currentList) result.push(this.wrapList(currentList, listItems));
+                    currentList = 'ul';
+                    listItems = [];
+                }
+                listItems.push(item);
+                continue;
+            }
+            
+            // 有序列表
+            const orderedMatch = trimmed.match(/^\d+\.\s+(.+)/);
+            if (orderedMatch) {
+                const item = `<li>${orderedMatch[1]}</li>`;
+                
+                if (currentList !== 'ol') {
+                    if (currentList) result.push(this.wrapList(currentList, listItems));
+                    currentList = 'ol';
+                    listItems = [];
+                }
+                listItems.push(item);
+                continue;
+            }
+            
+            // 非列表行
+            if (currentList) {
+                result.push(this.wrapList(currentList, listItems));
+                currentList = null;
+                listItems = [];
+            }
+            
+            if (trimmed) result.push(line);
+        }
+        
+        if (currentList) {
+            result.push(this.wrapList(currentList, listItems));
+        }
+        
+        return result.join('\n');
+    }
+
+    wrapList(type, items) {
+        const tag = type === 'task' ? 'ul' : type;
+        return `<${tag}>${items.join('')}</${tag}>`;
+    }
+
+    processParagraphs(html) {
+        const lines = html.split('\n');
+        const result = [];
+        let currentParagraph = [];
+        
+        for (const line of lines) {
+            const trimmed = line.trim();
+            
+            const isBlockElement = trimmed === '' ||
+                trimmed.startsWith('<pre') ||
+                trimmed.startsWith('<ul') ||
+                trimmed.startsWith('<ol') ||
+                trimmed.startsWith('<blockquote') ||
+                trimmed.includes('</pre>') ||
+                trimmed.includes('</ul>') ||
+                trimmed.includes('</ol>') ||
+                trimmed.includes('</blockquote>');
+            
+            if (isBlockElement) {
+                if (currentParagraph.length > 0) {
+                    result.push(`<p>${currentParagraph.join(' ')}</p>`);
+                    currentParagraph = [];
+                }
+                if (trimmed !== '') {
+                    result.push(trimmed);
+                }
+            } else if (trimmed !== '') {
+                currentParagraph.push(trimmed);
+            }
+        }
+        
+        if (currentParagraph.length > 0) {
+            result.push(`<p>${currentParagraph.join(' ')}</p>`);
+        }
+        
+        return result.join('\n');
+    }
+
+    escapeHtml(text) {
+        const div = document.createElement('div');
+        div.textContent = text;
+        return div.innerHTML;
+    }
+
+    setupObserver() {
+        this.observer = new MutationObserver((mutations) => {
+            let shouldProcess = false;
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'childList') {
+                    mutation.addedNodes.forEach((node) => {
+                        if (node.nodeType === 1) {
+                            const hasAlerts = this.alertTypes.some(type => 
+                                node.classList?.contains(type) || 
+                                node.querySelector?.(`.${type}`)
+                            ) || node.classList?.contains('alert') || node.querySelector?.('.alert');
+                            
+                            if (hasAlerts) shouldProcess = true;
+                        }
+                    });
+                }
+            });
+            if (shouldProcess) {
+                setTimeout(() => this.processAll(), 100);
+            }
+        });
+
+        this.observer.observe(document.body, {
+            childList: true,
+            subtree: true
+        });
+    }
+
+    refresh() {
+        // 清除處理標記
+        document.querySelectorAll('[data-alert-processed]').forEach(el => {
+            el.removeAttribute('data-alert-processed');
+        });
+        
+        this.processAll();
+    }
+
+    destroy() {
+        if (this.observer) {
+            this.observer.disconnect();
+        }
+    }
+}
+
+// ========== 初始化 ==========
+function initUnifiedAlerts() {
+    if (window.unifiedAlertProcessor) {
+        window.unifiedAlertProcessor.destroy();
+    }
+    
+    window.unifiedAlertProcessor = new UnifiedAlertProcessor();
+}
+
+// ========== 事件監聽 ==========
+document.addEventListener('DOMContentLoaded', initUnifiedAlerts);
+document.addEventListener('astro:page-load', initUnifiedAlerts);
+
+// 提供外部介面
+window.refreshAlerts = function() {
+    if (window.unifiedAlertProcessor) {
+        window.unifiedAlertProcessor.refresh();
+    }
+};
+</script>
+
+<style>
+  .alert {
+    margin: 1.5rem 0;
+    padding: 1rem 1.2rem;
+    border-radius: 0.75rem;
+    border: 1px solid;
+    position: relative;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    transition: all 0.3s ease;
+  }
+
+  .alert:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
+  }
+
+  .alert-content {
+    width: 100%;
+  }
+
+  .alert-header {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+  }
+
+  .alert-icon {
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+  }
+
+  .alert-title {
+    font-weight: 700;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: inherit;
+  }
+
+  .alert-body {
+    color: inherit;
+  }
+
+  /* 摺疊式警告框 */
+  .alert-collapsible {
+    width: 100%;
+  }
+
+  .alert-collapsible summary {
+    list-style: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0;
+    margin: 0;
+  }
+
+  .alert-collapsible summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .alert-chevron {
+    margin-left: auto;
+    transition: transform 0.3s ease;
+    font-size: 0.8rem;
+  }
+
+  .alert-collapsible[open] .alert-chevron {
+    transform: rotate(180deg);
+  }
+
+  .alert-collapsible[open] summary {
+    margin-bottom: 0.75rem;
+  }
+
+  /* 全局樣式用於內容 */
+  .alert-body :global(p) {
+    margin: 0.5rem 0;
+    color: inherit;
+  }
+
+  .alert-body :global(p:last-child) {
+    margin-bottom: 0;
+  }
+
+  .alert-body :global(p:first-child) {
+    margin-top: 0;
+  }
+
+  .alert-body :global(strong) {
+    font-weight: 700;
+    color: inherit;
+  }
+
+  .alert-body :global(em) {
+    font-style: italic;
+    opacity: 0.9;
+  }
+
+  .alert-body :global(code) {
+    background: rgba(0, 0, 0, 0.1);
+    padding: 0.125rem 0.375rem;
+    border-radius: 0.25rem;
+    font-size: 0.875em;
+    font-weight: 600;
+    color: inherit;
+    font-family: 'JetBrains Mono', 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  }
+
+  .alert-body :global(pre) {
+    background: rgba(0, 0, 0, 0.05);
+    padding: 1rem;
+    border-radius: 0.5rem;
+    margin: 0.75rem 0;
+    overflow-x: auto;
+    font-family: 'JetBrains Mono', 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  }
+
+  .alert-body :global(pre code) {
+    background: none;
+    padding: 0;
+  }
+
+  .alert-body :global(ul),
+  .alert-body :global(ol) {
+    margin: 0.5rem 0;
+    padding-left: 1.5rem;
+  }
+
+  .alert-body :global(li) {
+    margin: 0.25rem 0;
+    color: inherit;
+  }
+
+  .alert-body :global(a) {
+    color: inherit;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    opacity: 0.9;
+    transition: opacity 0.3s ease;
+  }
+
+  .alert-body :global(a:hover) {
+    opacity: 1;
+  }
+
+  .alert-body :global(blockquote) {
+    border-left: 2px solid currentColor;
+    padding-left: 1rem;
+    margin: 0.75rem 0;
+    opacity: 0.8;
+    font-style: italic;
+  }
+
+  .alert-body :global(.task-list-item) {
+    list-style: none;
+    margin-left: -1rem;
+  }
+
+  .alert-body :global(.task-list-item input) {
+    margin-right: 0.5rem;
+    accent-color: currentColor;
+  }
+
+  .alert-body :global(kbd) {
+    background: rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 0.25rem;
+    padding: 0.125rem 0.375rem;
+    font-size: 0.8em;
+    font-family: 'JetBrains Mono', 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+  }
+
+  .alert-body :global(mark) {
+    background: rgba(255, 255, 0, 0.3);
+    padding: 0.125rem 0.25rem;
+    border-radius: 0.25rem;
+  }
+
+  .alert-body :global(del) {
+    opacity: 0.7;
+    text-decoration: line-through;
+  }
+</style>

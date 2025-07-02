@@ -1,13 +1,12 @@
 ---
 title: 在 Mac 及 Linux CLI 使用 FortiClientVPN 
 pubDate: 2024-10-19
-description: ''
+description: '這篇會解釋我在 Macs 上使用 FortiClientVPN 的痛苦經歷'
 heroImage: 'hero.png'
 tags: ["FortiClient","Network","VPN","Mac","Linux"]
 category: 'Network'
 ---
 
-這篇會解釋我在 Macs 上使用 FortiClientVPN 的痛苦經歷
 
 # 前言
 
