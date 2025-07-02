@@ -19,12 +19,3 @@ category: 'Life'
 <div class="note">這是一個筆記框</div>
 
 
-<Alert type="info">
-這是一個 **重要** 的資訊框，可以包含：
-
-- 列表項目  
-- `程式碼`
-- [連結](https://example.com)
-
-支援完整的 Markdown 語法！
-</Alert>
