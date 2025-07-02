@@ -19,8 +19,10 @@ type Props = CollectionEntry<'blog'>['data'] & {
 const { title, description, pubDate, updatedDate, heroImage, category, tags, slug } = Astro.props;
 
 let heroImageData;
-if (heroImage) {
+if (typeof heroImage === "string") {
   heroImageData = await import(heroImage);
+} else if (heroImage && typeof heroImage === "object" && "src" in heroImage) {
+  heroImageData = heroImage;
 }
 ---
 
@@ -30,8 +32,8 @@ if (heroImage) {
 		<meta property="og:site_name" content="BLOsGa" />
 		<meta property="og:title" content={title} />
 		<meta property="og:description" content={description} />
-		{heroImage && (
-			<meta property="og:image" content={heroImageData.default.src} />
+		{heroImageData?.src && (
+		<meta property="og:image" content={heroImageData.src} />
 		)}
 		<meta charset="UTF-8" />
 	</head>
