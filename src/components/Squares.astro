@@ -210,18 +210,20 @@ const {
   }
 
   // Initialize all squares canvases
-  document.addEventListener("DOMContentLoaded", () => {
+  function initSquaresAnimations() {
     const canvases = document.querySelectorAll<HTMLCanvasElement>(".squares-canvas");
-    const animations: SquaresAnimation[] = [];
 
     canvases.forEach((canvas) => {
-      const animation = new SquaresAnimation(canvas);
-      animations.push(animation);
+      // Check if this canvas already has an animation to avoid duplicate initialization
+      if (!canvas.hasAttribute('data-animation-initialized')) {
+        const animation = new SquaresAnimation(canvas);
+        canvas.setAttribute('data-animation-initialized', 'true');
+      }
     });
+  }
 
-    // Cleanup on page unload
-    window.addEventListener("beforeunload", () => {
-      animations.forEach(animation => animation.destroy());
-    });
-  });
+  document.addEventListener("DOMContentLoaded", initSquaresAnimations);
+
+  // Initialize for Astro page transitions
+  document.addEventListener("astro:page-load", initSquaresAnimations);
 </script>

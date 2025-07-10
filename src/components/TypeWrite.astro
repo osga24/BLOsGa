@@ -113,6 +113,21 @@ const {
         pauseTime,
         loop
       });
+      element.setAttribute('data-typewriter-initialized', 'true');
+    }
+  });
+
+  // Initialize for Astro page transitions
+  document.addEventListener('astro:page-load', () => {
+    const element = document.getElementById('typewriter-text');
+    if (element && words.length > 0 && !element.hasAttribute('data-typewriter-initialized')) {
+      new TypeWriter(element, words, {
+        speed,
+        deleteSpeed,
+        pauseTime,
+        loop
+      });
+      element.setAttribute('data-typewriter-initialized', 'true');
     }
   });
 </script>
