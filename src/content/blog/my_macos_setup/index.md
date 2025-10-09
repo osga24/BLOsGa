@@ -42,7 +42,7 @@ category: 'Life'
 ## Ice
 開源版的 Bartender，自從 Bartender 默默賣給中國公司之後，就不太敢在使用，尤其 Bartender 偶爾就會開始監測螢幕內容，用到心裡還是會怕怕的
 
-在某次機會 CX330 跟我推薦 Ice 這款工具，基本上 Bartender 有的 Ice 都有，而且又是開源的，更加安心
+某次機會 CX330 跟我推薦 Ice 這款工具，基本上 Bartender 有的 Ice 都有，而且又是開源的，更加安心
 
 ![Ice](Ice.webp)
 
