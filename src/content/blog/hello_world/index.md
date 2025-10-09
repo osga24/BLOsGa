@@ -11,6 +11,8 @@ category: 'Life'
 
 這裡是我的 Blog ，我會在這裡記錄有關於我所研究的事物以及心得，如果你想了解我可以到我的[個人網站](https://osga.lol)！
 
+asdasd
+
 <div class="info">這是一個資訊框</div>
 <div class="warning">這是一個警告框</div>
 <div class="danger">這是一個危險框</div>
