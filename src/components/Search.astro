@@ -63,8 +63,6 @@ const { searchData } = Astro.props;
   <div class="s-dropdown" id="s-dropdown">
     <div id="s-results" class="s-results" role="listbox"></div>
     <div class="s-footer">
-      <span class="s-hint"><kbd>↑</kbd><kbd>↓</kbd> 導航</span>
-      <span class="s-hint"><kbd>↵</kbd> 開啟</span>
       <span class="s-hint"><kbd>ESC</kbd> 關閉</span>
       <span class="s-count" id="s-count"></span>
     </div>
@@ -177,12 +175,20 @@ const { searchData } = Astro.props;
           <span class="result-title">${hl(post.title, q)}</span>
           ${post.description ? `<span class="result-desc">${hl(post.description, q)}</span>` : ''}
         </div>
-        <div class="result-aside">
-          ${post.category ? `<span class="result-chip">${hl(post.category, q)}</span>` : ''}
-          <span class="result-date">${post.date}</span>
-        </div>
       </a>
     `).join('');
+    // results.innerHTML = items.map((post, i) => `
+    //   <a href="/blog/${post.slug}/" class="result-item" role="option" data-index="${i}">
+    //     <div class="result-body">
+    //       <span class="result-title">${hl(post.title, q)}</span>
+    //       ${post.description ? `<span class="result-desc">${hl(post.description, q)}</span>` : ''}
+    //     </div>
+    //     <div class="result-aside">
+    //       ${post.category ? `<span class="result-chip">${hl(post.category, q)}</span>` : ''}
+    //       <span class="result-date">${post.date}</span>
+    //     </div>
+    //   </a>
+    // `).join('');
 
     results.querySelectorAll('.result-item').forEach((el) => {
       el.addEventListener('click', close);
@@ -384,7 +390,9 @@ const { searchData } = Astro.props;
   display: flex;
   align-items: center;
   gap: 1rem;
-  padding: 0.875rem 2rem;
+  padding: 0.75rem 1.75rem;
+  margin: 0 0.75rem;
+  border-radius: 10px;
   text-decoration: none;
   color: inherit;
   border-left: 2px solid transparent;
@@ -402,7 +410,7 @@ const { searchData } = Astro.props;
   min-width: 0;
   display: flex;
   flex-direction: column;
-  gap: 0.2rem;
+  gap: 0.25rem;
 }
 .result-title {
   font-size: 0.9rem;
