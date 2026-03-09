@@ -88,13 +88,15 @@ const {
 
     private setupCanvas() {
       const resizeCanvas = () => {
-        this.canvas.width = this.canvas.offsetWidth;
-        this.canvas.height = this.canvas.offsetHeight;
-        this.numSquaresX = Math.ceil(this.canvas.width / this.squareSize) + 1;
-        this.numSquaresY = Math.ceil(this.canvas.height / this.squareSize) + 1;
+        const { width, height } = this.canvas.getBoundingClientRect();
+        this.canvas.width = width;
+        this.canvas.height = height;
+        this.numSquaresX = Math.ceil(width / this.squareSize) + 1;
+        this.numSquaresY = Math.ceil(height / this.squareSize) + 1;
       };
 
-      window.addEventListener("resize", resizeCanvas);
+      const ro = new ResizeObserver(() => resizeCanvas());
+      ro.observe(this.canvas);
       resizeCanvas();
     }
 

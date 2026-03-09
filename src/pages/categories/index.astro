@@ -6,126 +6,194 @@ import { ViewTransitions } from 'astro:transitions';
 import { SITE_TITLE } from '../../consts';
 import "../../styles/global.css";
 import { getCollection } from 'astro:content';
+import { getCategoryIcon } from '../../data/categoryIcons';
 
 const posts = await getCollection('blog');
 
 const categoryStats = posts.reduce((acc, post) => {
     if (post.data.category) {
-        const category = post.data.category;
-        if (acc[category]) {
-            acc[category] += 1;
-        } else {
-            acc[category] = 1;
-        }
+        const cat = post.data.category;
+        if (!acc[cat]) acc[cat] = { count: 0, latest: null };
+        acc[cat].count += 1;
+        const d = post.data.pubDate;
+        if (!acc[cat].latest || d > acc[cat].latest) acc[cat].latest = d;
     }
     return acc;
-}, {});
+}, {} as Record<string, { count: number; latest: Date | null }>);
 
 const categories = Object.entries(categoryStats)
-    .map(([name, count]) => ({ name, count }))
-    .sort((a, b) => a.name.localeCompare(b.name));
+    .map(([name, { count, latest }]) => ({ name, count, latest }))
+    .sort((a, b) => b.count - a.count);
 ---
 
 <!doctype html>
 <html lang="zh-TW">
     <head>
         <BaseHead title={`Folder - ${SITE_TITLE}`} description="瀏覽所有文章分類" />
-		<ViewTransitions/>
+        <ViewTransitions/>
     </head>
     <body>
         <Header />
-        
+
         <main>
-            <section class="hero-section">
-                <h1 class="gradient-text">Floder</h1>
-                <p class="hero-description">
-					每個分類的資料夾 📂
-                </p>
+            <div class="page-header">
+                <h1 class="gradient-text">Folder</h1>
+                <p class="page-sub">每個分類的資料夾，目前累積 <span class="accent-num">{categories.length}</span> 個 la !</p>
                 <div class="hero-divider"></div>
-            </section>
+            </div>
 
             {categories.length > 0 ? (
-                <div class="categories-list">
-                    {categories.map((category) => (
-                        <a href={`/categories/${encodeURIComponent(category.name)}/`} class="category-item">
-                            <span class="category-name">{category.name}</span>
-                            <span class="category-count">{category.count}</span>
+                <div class="cat-grid">
+                    {categories.map((cat) => (
+                        <a href={`/categories/${encodeURIComponent(cat.name)}/`} class="cat-card">
+                            <div class="cat-card-top">
+                                <svg class="cat-icon" viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                                    {getCategoryIcon(cat.name).paths.map(d => <path d={d} />)}
+                                </svg>
+                                <span class="cat-count-badge">{cat.count}</span>
+                            </div>
+                            <div class="cat-card-body">
+                                <h2 class="cat-name">{cat.name}</h2>
+                                <p class="cat-meta">{cat.count} 篇文章</p>
+                            </div>
+                            <div class="cat-card-arrow">→</div>
                         </a>
                     ))}
                 </div>
             ) : (
                 <div class="empty-state">
-                    <div class="empty-icon">📂</div>
+                    <div class="empty-icon">—</div>
                     <h3>尚無分類</h3>
                     <p>還沒有任何文章分類</p>
                 </div>
             )}
         </main>
-        
+
         <Footer />
-
-        <style>
-            .categories-list {
-                display: grid;
-                grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-                gap: 1rem;
-                margin-bottom: 3rem;
-            }
-
-            .category-item {
-                display: flex;
-                justify-content: space-between;
-                align-items: center;
-                padding: 1.25rem 1.5rem;
-                background: rgba(var(--bg-card), 0.6);
-                border: 1px solid rgba(var(--border), 0.2);
-                border-radius: 8px;
-                color: rgb(var(--gray));
-                text-decoration: none;
-                transition: all 0.3s ease;
-            }
-
-            .category-item:hover {
-                background: rgba(var(--bg-hover), 0.8);
-                border-color: var(--accent);
-                color: rgb(var(--black));
-                transform: translateY(-2px);
-            }
-
-            .category-name {
-                font-weight: 500;
-                font-size: 1rem;
-            }
-
-            .category-count {
-                color: rgb(var(--text-muted));
-                font-size: 0.9rem;
-                transition: color 0.3s ease;
-            }
-
-            .category-item:hover .category-count {
-                color: var(--accent);
-            }
-
-            /* 響應式 */
-            @media (max-width: 720px) {
-                .categories-list {
-                    grid-template-columns: 1fr;
-                    gap: 0.75rem;
-                }
-
-                .category-item {
-                    padding: 1rem 1.25rem;
-                }
-
-                .category-name {
-                    font-size: 0.95rem;
-                }
-
-                .category-count {
-                    font-size: 0.85rem;
-                }
-            }
-        </style>
     </body>
 </html>
+
+<style>
+/* ── Page Header ── */
+.page-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+.page-sub {
+    font-size: clamp(0.9rem, 3vw, 1.1rem);
+    color: rgb(var(--gray));
+    margin: 0.75rem 0 0;
+}
+.accent-num {
+    color: var(--accent);
+    font-weight: 700;
+}
+
+/* ── Category Grid ── */
+.cat-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: clamp(1rem, 2.5vw, 1.5rem);
+    margin-bottom: 3rem;
+}
+
+/* ── Category Card ── */
+.cat-card {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem;
+    background: rgba(var(--bg-card), 0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(var(--border), 0.3);
+    border-radius: 14px;
+    text-decoration: none;
+    color: inherit;
+    overflow: hidden;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+}
+.cat-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.07), transparent);
+}
+.cat-card:hover {
+    border-color: rgba(var(--accent), 0.5);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.28);
+    transform: translateY(-3px);
+    opacity: 1;
+}
+
+.cat-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+}
+
+.cat-icon {
+    display: block;
+    color: var(--accent);
+    opacity: 0.8;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+}
+.cat-card:hover .cat-icon { transform: scale(1.1); opacity: 1; }
+
+.cat-count-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 1.75rem;
+    height: 1.75rem;
+    padding: 0 0.5rem;
+    background: rgba(var(--accent), 0.12);
+    color: var(--accent);
+    border: 1px solid rgba(var(--accent), 0.25);
+    border-radius: 20px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+}
+
+.cat-card-body { flex: 1; }
+
+.cat-name {
+    font-size: clamp(1rem, 2vw, 1.2rem);
+    font-weight: 700;
+    color: rgb(var(--black));
+    margin: 0 0 0.35rem;
+    line-height: 1.3;
+    transition: color 0.3s ease;
+}
+.cat-card:hover .cat-name { color: var(--accent); }
+
+.cat-meta {
+    font-size: 0.78rem;
+    color: rgb(var(--text-muted));
+    margin: 0;
+}
+
+.cat-card-arrow {
+    margin-top: 1.25rem;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(var(--border), 0.2);
+    font-size: 0.85rem;
+    color: rgb(var(--text-muted));
+    text-align: right;
+    transition: color 0.3s ease, transform 0.3s ease;
+}
+.cat-card:hover .cat-card-arrow {
+    color: var(--accent);
+    transform: translateX(3px);
+}
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+    .cat-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 560px) {
+    .cat-grid { grid-template-columns: 1fr; }
+}
+</style>
