@@ -15,15 +15,10 @@ const posts = (await getCollection('blog')).sort(
 );
 
 const talksomething = [
-	"每個成功的男人背後，都有一條脊椎",
-	"我一拳把自己打死了，算強壯還是虛弱",
-	"如果你願意多花一點時間了解我，你會發現多花了一點時間",
 	"過期的毒藥是更毒還是不毒",
 	"吃麻婆豆腐會不會被麻婆告",
-	"你知道你在吹電風扇時其實是電風扇在吹你嗎",
 	"咖啡算不算一種豆漿",
 	"坐電梯其實是站電梯",
-	"剛睡醒的時候就像剛睡醒的時候一樣，有一種剛睡醒的感覺。如果你也是剛睡醒，那麼你也剛睡醒"
 ];
 
 const featuredPost = posts[0];
@@ -573,5 +568,10 @@ const gridPosts   = posts.slice(3);
 }
 @media (max-width: 480px) {
 	.social-link { width: 36px; height: 36px; }
+	.hero-content { padding: 1.5rem 1rem; }
+	.hero-description { font-size: 0.8rem; }
+}
+@media (max-width: 375px) {
+	.hero-description { font-size: 0.75rem; }
 }
 </style>

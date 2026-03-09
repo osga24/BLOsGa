@@ -1,6 +1,20 @@
 ---
 import HeaderLink from './HeaderLink.astro';
+import Search from './Search.astro';
 import { SITE_TITLE } from '../consts';
+import { getCollection } from 'astro:content';
+
+const posts = await getCollection('blog');
+const searchData = posts
+  .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf())
+  .map(post => ({
+    slug: post.slug,
+    title: post.data.title,
+    description: post.data.description ?? '',
+    category: post.data.category ?? '',
+    tags: post.data.tags ?? [],
+    date: post.data.pubDate.toLocaleDateString('zh-TW', { year: 'numeric', month: 'short', day: 'numeric' }),
+  }));
 ---
 
 <header class="header">
@@ -8,13 +22,18 @@ import { SITE_TITLE } from '../consts';
 		<div class="brand">
 			<a href="/" class="brand-link">{SITE_TITLE}</a>
 		</div>
-		
+
+		<!-- Desktop nav -->
 		<div class="nav-links">
 			<HeaderLink href="/">Home</HeaderLink>
 			<HeaderLink href="/categories">Folder</HeaderLink>
 			<HeaderLink href="/about">About</HeaderLink>
 		</div>
-		
+
+		<!-- Desktop search (hidden on mobile) -->
+		<Search searchData={searchData} />
+
+		<!-- Desktop social -->
 		<div class="social-links">
 			<a href="https://github.com/osga24/blosga" target="_blank" class="social-link" aria-label="GitHub Repository">
 				<svg viewBox="0 0 16 16" width="20" height="20">
@@ -27,21 +46,194 @@ import { SITE_TITLE } from '../consts';
 				</svg>
 			</a>
 		</div>
+
+		<!-- Hamburger (mobile only) -->
+		<button class="hamburger" id="hamburger" aria-label="開啟選單" aria-expanded="false" aria-controls="mobile-menu">
+			<span class="bar"></span>
+			<span class="bar"></span>
+			<span class="bar"></span>
+		</button>
 	</nav>
+
+	<!-- Mobile menu -->
+	<div class="mobile-menu" id="mobile-menu" aria-hidden="true">
+
+		<!-- ① Mobile search -->
+		<div class="mob-search">
+			<div class="mob-search-bar">
+				<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="mob-search-icon">
+					<circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+				</svg>
+				<input
+					id="mob-search-input"
+					class="mob-search-input"
+					type="text"
+					placeholder="搜尋文章、分類、標籤…"
+					autocomplete="off"
+					spellcheck="false"
+				/>
+				<button class="mob-search-clear" id="mob-search-clear" aria-label="清除">
+					<svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+						<line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+					</svg>
+				</button>
+			</div>
+
+			<!-- Results (shown when typing) -->
+			<div class="mob-results" id="mob-results"></div>
+		</div>
+
+		<!-- ② Nav links (hidden when searching) -->
+		<div class="mobile-nav-links" id="mobile-nav-links">
+			<HeaderLink href="/">Home</HeaderLink>
+			<HeaderLink href="/categories">Folder</HeaderLink>
+			<HeaderLink href="/about">About</HeaderLink>
+		</div>
+
+		<!-- ③ Social (hidden when searching) -->
+		<div class="mobile-social" id="mobile-social">
+			<a href="https://github.com/osga24/blosga" target="_blank" class="social-link" aria-label="GitHub Repository">
+				<svg viewBox="0 0 16 16" width="20" height="20">
+					<path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.012 8.012 0 0 0 16 8c0-4.42-3.58-8-8-8z"></path>
+				</svg>
+				<span>GitHub</span>
+			</a>
+			<a href="https://osga.dev" target="_blank" class="social-link" aria-label="Personal Website">
+				<svg viewBox="0 0 16 16" width="20" height="20">
+					<path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8s3.58 8 8 8 8-3.58 8-8-3.58-8-8-8zM6.5 4.5c0-.28.22-.5.5-.5s.5.22.5.5-.22.5-.5.5-.5-.22-.5-.5zm3 0c0-.28.22-.5.5-.5s.5.22.5.5-.22.5-.5.5-.5-.22-.5-.5zM8 13c-2.76 0-5-2.24-5-5 0-.55.45-1 1-1s1 .45 1 1c0 1.65 1.35 3 3 3s3-1.35 3-3c0-.55.45-1 1-1s1 .45 1 1c0 2.76-2.24 5-5 5z"/>
+				</svg>
+				<span>osga.dev</span>
+			</a>
+		</div>
+	</div>
 </header>
 
+<!-- Hamburger toggle -->
+<script>
+	const hamburger = document.getElementById('hamburger');
+	const mobileMenu = document.getElementById('mobile-menu');
+
+	function toggleMenu(open?: boolean) {
+		const isOpen = open ?? hamburger?.getAttribute('aria-expanded') !== 'true';
+		hamburger?.setAttribute('aria-expanded', String(isOpen));
+		mobileMenu?.setAttribute('aria-hidden', String(!isOpen));
+		hamburger?.classList.toggle('is-open', isOpen);
+		mobileMenu?.classList.toggle('is-open', isOpen);
+		document.body.style.overflow = isOpen ? 'hidden' : '';
+		if (!isOpen) resetMobSearch();
+	}
+
+	hamburger?.addEventListener('click', () => toggleMenu());
+	document.addEventListener('astro:before-swap', () => toggleMenu(false));
+
+	// Close when a nav link is clicked
+	mobileMenu?.querySelectorAll('.mobile-nav-links a, .mobile-social a').forEach(link => {
+		link.addEventListener('click', () => toggleMenu(false));
+	});
+
+	function resetMobSearch() {
+		const input = document.getElementById('mob-search-input') as HTMLInputElement | null;
+		const results = document.getElementById('mob-results');
+		const navLinks = document.getElementById('mobile-nav-links');
+		const social = document.getElementById('mobile-social');
+		const clear = document.getElementById('mob-search-clear');
+		if (input) input.value = '';
+		if (results) results.innerHTML = '';
+		if (navLinks) navLinks.classList.remove('is-hidden');
+		if (social) social.classList.remove('is-hidden');
+		if (clear) clear.style.display = 'none';
+	}
+</script>
+
+<!-- Mobile search logic -->
+<script define:vars={{ searchData }}>
+	const mobInput   = document.getElementById('mob-search-input');
+	const mobResults = document.getElementById('mob-results');
+	const mobNav     = document.getElementById('mobile-nav-links');
+	const mobSocial  = document.getElementById('mobile-social');
+	const mobClear   = document.getElementById('mob-search-clear');
+
+	if (mobClear) mobClear.style.display = 'none';
+
+	function norm(s) { return s.toLowerCase().trim(); }
+
+	function doSearch(q) {
+		const nq = norm(q);
+		return searchData.filter(p =>
+			norm(p.title).includes(nq) ||
+			norm(p.description).includes(nq) ||
+			norm(p.category).includes(nq) ||
+			p.tags.some(t => norm(t).includes(nq))
+		);
+	}
+
+	function hl(text, q) {
+		if (!q) return text;
+		const esc = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+		return text.replace(new RegExp(`(${esc})`, 'gi'), '<mark>$1</mark>');
+	}
+
+	function render(items, q) {
+		if (!items.length) {
+			mobResults.innerHTML = `<p class="mob-empty">找不到「${q}」相關文章</p>`;
+			return;
+		}
+		mobResults.innerHTML = items.map(p => `
+			<a href="/blog/${p.slug}/" class="mob-result-item">
+				<div class="mob-result-title">${hl(p.title, q)}</div>
+				<div class="mob-result-meta">
+					${p.category ? `<span class="mob-result-chip">${hl(p.category, q)}</span>` : ''}
+					<span class="mob-result-date">${p.date}</span>
+				</div>
+			</a>
+		`).join('');
+
+		// close menu on result click
+		mobResults.querySelectorAll('.mob-result-item').forEach(el => {
+			el.addEventListener('click', () => {
+				const hamburger = document.getElementById('hamburger');
+				hamburger?.dispatchEvent(new MouseEvent('click'));
+			});
+		});
+	}
+
+	mobInput?.addEventListener('input', () => {
+		const q = mobInput.value.trim();
+		if (mobClear) mobClear.style.display = q ? 'flex' : 'none';
+
+		if (q) {
+			mobNav?.classList.add('is-hidden');
+			mobSocial?.classList.add('is-hidden');
+			render(doSearch(q), q);
+		} else {
+			mobNav?.classList.remove('is-hidden');
+			mobSocial?.classList.remove('is-hidden');
+			mobResults.innerHTML = '';
+		}
+	});
+
+	mobClear?.addEventListener('click', () => {
+		if (mobInput) mobInput.value = '';
+		if (mobClear) mobClear.style.display = 'none';
+		mobNav?.classList.remove('is-hidden');
+		mobSocial?.classList.remove('is-hidden');
+		mobResults.innerHTML = '';
+		mobInput?.focus();
+	});
+</script>
+
 <style>
+	/* ── Header shell ── */
 	.header {
 		position: sticky;
 		top: 0;
-		z-index: 100;
+		z-index: 200;
 		background: rgba(var(--gray-dark), 0.95);
 		backdrop-filter: blur(12px);
 		border-bottom: 1px solid rgba(var(--border), 0.1);
-		padding: 0;
-		margin: 0;
 	}
 
+	/* ── Desktop nav bar ── */
 	.nav {
 		display: flex;
 		align-items: center;
@@ -52,24 +244,19 @@ import { SITE_TITLE } from '../consts';
 		gap: 2rem;
 	}
 
-	.brand {
-		flex-shrink: 0;
-	}
-
+	/* ── Brand ── */
+	.brand { flex-shrink: 0; }
 	.brand-link {
 		font-size: 1.25rem;
 		font-weight: 700;
 		color: rgb(var(--black));
 		text-decoration: none;
-		transition: all 0.3s ease;
-		position: relative;
+		transition: color 0.3s ease, transform 0.3s ease;
+		display: inline-block;
 	}
+	.brand-link:hover { color: var(--accent); transform: translateY(-1px); }
 
-	.brand-link:hover {
-		color: var(--accent);
-		transform: translateY(-1px);
-	}
-
+	/* ── Desktop nav links ── */
 	.nav-links {
 		display: flex;
 		align-items: center;
@@ -77,38 +264,34 @@ import { SITE_TITLE } from '../consts';
 		flex: 1;
 		justify-content: center;
 	}
-
 	.nav-links :global(a) {
-		padding: 0.75rem 1rem;
+		padding: 0.6rem 1rem;
 		color: rgb(var(--gray));
 		text-decoration: none;
 		border-radius: 8px;
 		font-weight: 500;
 		font-size: 0.9rem;
 		transition: all 0.3s ease;
-		position: relative;
-		white-space: nowrap; /* 防止文字換行 */
+		white-space: nowrap;
 	}
-
 	.nav-links :global(a:hover) {
 		color: rgb(var(--black));
 		background: rgba(var(--bg-hover), 0.4);
 		transform: translateY(-1px);
 	}
-
 	.nav-links :global(a.active) {
 		color: var(--accent);
 		background: rgba(var(--accent), 0.1);
 		font-weight: 600;
 	}
 
+	/* ── Desktop social ── */
 	.social-links {
 		display: flex;
 		align-items: center;
 		gap: 0.75rem;
 		flex-shrink: 0;
 	}
-
 	.social-link {
 		display: flex;
 		align-items: center;
@@ -122,110 +305,246 @@ import { SITE_TITLE } from '../consts';
 		background: rgba(var(--bg-card), 0.3);
 		border: 1px solid rgba(var(--border), 0.1);
 	}
-
 	.social-link:hover {
 		color: var(--accent);
 		background: rgba(var(--bg-hover), 0.6);
 		border-color: rgba(var(--accent), 0.3);
 		transform: translateY(-2px);
 		box-shadow: 0 4px 12px rgba(var(--accent), 0.2);
+		opacity: 1;
 	}
+	.social-link svg { transition: transform 0.3s ease; }
+	.social-link:hover svg { transform: scale(1.1); }
 
-	.social-link svg {
-		transition: transform 0.3s ease;
+	/* ── Hamburger ── */
+	.hamburger {
+		display: none;
+		flex-direction: column;
+		justify-content: center;
+		gap: 5px;
+		width: 40px;
+		height: 40px;
+		padding: 8px;
+		background: rgba(var(--bg-card), 0.3);
+		border: 1px solid rgba(var(--border), 0.2);
+		border-radius: 10px;
+		cursor: pointer;
+		transition: background 0.3s ease, border-color 0.3s ease;
+		flex-shrink: 0;
 	}
-
-	.social-link:hover svg {
-		transform: scale(1.1);
+	.hamburger:hover { background: rgba(var(--bg-hover), 0.5); border-color: rgba(var(--accent), 0.3); }
+	.bar {
+		display: block;
+		width: 100%;
+		height: 2px;
+		background: rgb(var(--gray));
+		border-radius: 2px;
+		transition: transform 0.3s ease, opacity 0.3s ease, background 0.3s ease;
+		transform-origin: center;
 	}
+	.hamburger.is-open .bar:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+	.hamburger.is-open .bar:nth-child(2) { opacity: 0; transform: scaleX(0); }
+	.hamburger.is-open .bar:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+	.hamburger.is-open .bar { background: var(--accent); }
 
-	/* 響應式設計 */
-	@media (max-width: 768px) {
-		.nav {
-			padding: 1rem;
-			gap: 1rem;
-		}
-
-		.nav-links {
-			gap: 0.25rem;
-		}
-
-		.nav-links :global(a) {
-			padding: 0.5rem 0.75rem;
-			font-size: 0.85rem;
-		}
-
-		.social-links {
-			gap: 0.5rem;
-		}
-
-		.social-link {
-			width: 36px;
-			height: 36px;
-		}
-	}
-
-	/* 手機模式：隱藏 social icons，防止導航按鈕換行 */
-	@media (max-width: 640px) {
-		.nav {
-			padding: 0.75rem 1rem;
-			gap: 0.75rem;
-		}
-
-		.brand-link {
-			font-size: 1.1rem;
-		}
-
-		.nav-links {
-			gap: 0.125rem;
-			justify-content: flex-end;
-		}
-
-		.nav-links :global(a) {
-			padding: 0.4rem 0.6rem;
-			font-size: 0.8rem;
-		}
-
-		/* 隱藏 social icons */
-		.social-links {
-			display: none;
-		}
-	}
-
-	/* 超小螢幕優化 */
-	@media (max-width: 480px) {
-		.nav {
-			padding: 0.5rem 0.75rem;
-		}
-
-		.brand-link {
-			font-size: 1rem;
-		}
-
-		.nav-links :global(a) {
-			padding: 0.35rem 0.5rem;
-			font-size: 0.75rem;
-		}
-	}
-
-	/* 非常小的螢幕（如 iPhone SE） */
-	@media (max-width: 375px) {
-		.nav-links :global(a) {
-			padding: 0.3rem 0.4rem;
-			font-size: 0.7rem;
-		}
-	}
-
-	/* 隱藏 screen reader 文字 */
-	.sr-only {
-		position: absolute !important;
-		width: 1px;
-		height: 1px;
-		padding: 0;
-		margin: -1px;
+	/* ── Mobile menu ── */
+	.mobile-menu {
+		display: none;
 		overflow: hidden;
-		clip: rect(0, 0, 0, 0);
+		max-height: 0;
+		opacity: 0;
+		transition: max-height 0.35s ease, opacity 0.25s ease;
+		border-top: 1px solid rgba(var(--border), 0.15);
+		background: rgba(var(--gray-dark), 0.98);
+	}
+	.mobile-menu.is-open { max-height: min(640px, 80vh); opacity: 1; }
+
+	/* ── Mobile search ── */
+	.mob-search {
+		padding: 1rem 1.25rem 0.5rem;
+		border-bottom: 1px solid rgba(var(--border), 0.1);
+	}
+
+	.mob-search-bar {
+		display: flex;
+		align-items: center;
+		gap: 0.625rem;
+		padding: 0.65rem 1rem;
+		background: rgba(var(--bg-card), 0.6);
+		border: 1px solid rgba(var(--border), 0.3);
+		border-radius: 10px;
+		transition: border-color 0.2s;
+	}
+	.mob-search-bar:focus-within {
+		border-color: rgba(var(--accent), 0.5);
+	}
+
+	.mob-search-icon { color: rgb(var(--text-muted)); flex-shrink: 0; }
+
+	.mob-search-input {
+		flex: 1;
+		min-width: 0;
+		background: none;
+		border: none;
+		outline: none;
+		font-size: 0.9rem;
+		font-family: inherit;
+		color: rgb(var(--black));
+		caret-color: var(--accent);
+		line-height: 1.4;
+	}
+	.mob-search-input::placeholder { color: rgba(var(--text-muted), 0.55); }
+
+	.mob-search-clear {
+		display: none;
+		align-items: center;
+		justify-content: center;
+		width: 20px;
+		height: 20px;
+		flex-shrink: 0;
+		background: rgba(var(--border), 0.4);
+		border: none;
+		border-radius: 50%;
+		color: rgb(var(--text-muted));
+		cursor: pointer;
+		transition: background 0.15s, color 0.15s;
+	}
+	.mob-search-clear:hover { background: rgba(var(--accent), 0.2); color: var(--accent); }
+
+	/* ── Mobile results ── */
+	.mob-results {
+		overflow-y: auto;
+		max-height: 280px;
+		overscroll-behavior: contain;
+		padding: 0.375rem 0.25rem;
+	}
+	.mob-results::-webkit-scrollbar { width: 3px; }
+	.mob-results::-webkit-scrollbar-thumb { background: rgba(var(--border), 0.4); border-radius: 2px; }
+
+	/* Each result card */
+	:global(.mob-result-item) {
+		display: block;
+		padding: 0.75rem 1.25rem;
+		text-decoration: none;
+		color: inherit;
+		border-bottom: 1px solid rgba(var(--border), 0.1);
+		border-radius: 8px;
+		transition: background 0.15s;
+	}
+	:global(.mob-result-item:hover) {
+		background: rgba(var(--bg-hover), 0.4);
+		opacity: 1;
+	}
+	:global(.mob-result-item:last-child) { border-bottom: none; }
+
+	:global(.mob-result-title) {
+		font-size: 0.875rem;
+		font-weight: 600;
+		color: rgb(var(--black));
+		line-height: 1.35;
+		margin-bottom: 0.3rem;
+		overflow: hidden;
+		text-overflow: ellipsis;
 		white-space: nowrap;
-		border: 0;
+	}
+	:global(.mob-result-title mark) {
+		background: rgba(var(--accent), 0.22);
+		color: var(--accent);
+		border-radius: 2px;
+		padding: 0 1px;
+	}
+
+	:global(.mob-result-meta) {
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
+	}
+	:global(.mob-result-chip) {
+		font-size: 0.58rem;
+		font-weight: 700;
+		text-transform: uppercase;
+		letter-spacing: 0.08em;
+		color: var(--accent);
+		background: rgba(var(--accent), 0.1);
+		border: 1px solid rgba(var(--accent), 0.2);
+		border-radius: 4px;
+		padding: 0.1rem 0.4rem;
+		white-space: nowrap;
+	}
+	:global(.mob-result-date) {
+		font-size: 0.65rem;
+		color: rgb(var(--text-muted));
+		white-space: nowrap;
+	}
+	:global(.mob-empty) {
+		padding: 1.25rem 0;
+		text-align: center;
+		font-size: 0.825rem;
+		color: rgb(var(--text-muted));
+	}
+
+	/* ── Mobile nav links ── */
+	.mobile-nav-links {
+		display: flex;
+		flex-direction: column;
+		padding: 0.5rem 1.25rem 0;
+		transition: opacity 0.2s, max-height 0.2s;
+	}
+	.mobile-nav-links.is-hidden { display: none; }
+	.mobile-nav-links :global(a) {
+		display: block;
+		padding: 0.875rem 0.75rem;
+		color: rgb(var(--gray));
+		text-decoration: none;
+		font-weight: 500;
+		font-size: 1rem;
+		border-radius: 8px;
+		border-bottom: 1px solid rgba(var(--border), 0.1);
+		transition: color 0.2s ease, background 0.2s ease;
+	}
+	.mobile-nav-links :global(a:last-child) { border-bottom: none; }
+	.mobile-nav-links :global(a:hover),
+	.mobile-nav-links :global(a.active) {
+		color: var(--accent);
+		background: rgba(var(--accent), 0.08);
+		opacity: 1;
+	}
+	.mobile-nav-links :global(a.active) { font-weight: 600; }
+
+	/* ── Mobile social ── */
+	.mobile-social {
+		display: flex;
+		gap: 0.75rem;
+		padding: 0.75rem 1.25rem 1.25rem;
+	}
+	.mobile-social.is-hidden { display: none; }
+	.mobile-social .social-link {
+		width: auto;
+		height: 44px;
+		padding: 0 1rem;
+		gap: 0.5rem;
+		font-size: 0.85rem;
+		flex: 1;
+		justify-content: center;
+	}
+	.mobile-social .social-link span {
+		color: rgb(var(--gray));
+		font-weight: 500;
+		transition: color 0.3s ease;
+	}
+	.mobile-social .social-link:hover span { color: var(--accent); }
+
+	/* ── Responsive ── */
+	@media (max-width: 768px) {
+		.nav { padding: 0.875rem 1.25rem; gap: 1rem; }
+		.nav-links :global(a) { padding: 0.5rem 0.75rem; font-size: 0.85rem; }
+		.social-link { width: 36px; height: 36px; }
+	}
+	@media (max-width: 640px) {
+		.nav { padding: 0.75rem 1rem; }
+		.nav-links  { display: none; }
+		.social-links { display: none; }
+		.hamburger { display: flex; }
+		.mobile-menu { display: block; }
 	}
 </style>

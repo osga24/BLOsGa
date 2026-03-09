@@ -383,6 +383,7 @@ img {
     font-weight: 800;
     line-height: 1.2;
     margin: 0 0 1.5rem 0;
+    padding: clamp(0.5rem, 2vw, 1rem) 0;
     color: rgb(var(--black));
     position: relative;
 }
