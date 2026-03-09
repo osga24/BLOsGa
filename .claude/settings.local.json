@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npm run:*)",
+      "WebFetch(domain:doeshing.one)",
+      "WebFetch(domain:yual.in)",
+      "Bash(git restore:*)",
+      "Bash(git checkout:*)"
+    ]
+  }
+}

@@ -7,16 +7,15 @@ import { SITE_TITLE } from '../../consts';
 import { ViewTransitions } from 'astro:transitions';
 import "../../styles/global.css";
 import { getCollection } from 'astro:content';
+import { getCategoryIcon } from '../../data/categoryIcons';
 
 export async function getStaticPaths() {
-	const posts = await getCollection('blog');
-
-	const categories = [...new Set(posts.map(post => post.data.category).filter(Boolean))];
-
-	return categories.map(category => ({
-		params: { category: encodeURIComponent(category) },
-		props: { category }
-	}));
+    const posts = await getCollection('blog');
+    const categories = [...new Set(posts.map(post => post.data.category).filter(Boolean))];
+    return categories.map(category => ({
+        params: { category: encodeURIComponent(category) },
+        props: { category }
+    }));
 }
 
 const { category } = Astro.props;
@@ -24,8 +23,8 @@ const decodedCategory = decodeURIComponent(category);
 
 const allPosts = await getCollection('blog');
 const categoryPosts = allPosts
-.filter(post => post.data.category === decodedCategory)
-.sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
+    .filter(post => post.data.category === decodedCategory)
+    .sort((a, b) => b.data.pubDate.valueOf() - a.data.pubDate.valueOf());
 
 const pageTitle = `${decodedCategory} - ${SITE_TITLE}`;
 const pageDescription = `瀏覽「${decodedCategory}」分類下的 ${categoryPosts.length} 篇文章`;
@@ -33,90 +32,277 @@ const pageDescription = `瀏覽「${decodedCategory}」分類下的 ${categoryPo
 
 <!doctype html>
 <html lang="zh-TW">
-	<head>
-		<BaseHead title={pageTitle} description={pageDescription} />
-		<ViewTransitions/>
-	</head>
-	<body>
-		<Header />
+    <head>
+        <BaseHead title={pageTitle} description={pageDescription} />
+        <ViewTransitions/>
+    </head>
+    <body>
+        <Header />
 
-		<main>
-			<nav class="breadcrumb">
-				<span>/</span>
-				<a href="/">home</a>
-				<span>/</span>
-				<a href="/categories/">categories</a>
-				<span>/</span>
-				<span>{decodedCategory}</span>
-			</nav>
+        <main>
+            <!-- Breadcrumb -->
+            <nav class="breadcrumb">
+                <a href="/">home</a>
+                <span class="bc-sep">/</span>
+                <a href="/categories/">folder</a>
+                <span class="bc-sep">/</span>
+                <span class="bc-current">{decodedCategory}</span>
+            </nav>
 
-			<section class="hero-section">
-				<h1 class="gradient-text">{decodedCategory}</h1>
-				<p class="hero-description">
-					{categoryPosts.length} 篇文章
-				</p>
-				<div class="hero-divider"></div>
-			</section>
+            <!-- Page Header -->
+            <div class="page-header">
+                <div class="cat-eyebrow">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                        {getCategoryIcon(decodedCategory).paths.map(d => <path d={d} />)}
+                    </svg>
+                    <span>{decodedCategory}</span>
+                </div>
+                <h1 class="gradient-text">{decodedCategory}</h1>
+                <p class="page-sub">共 <span class="accent-num">{categoryPosts.length}</span> 篇文章</p>
+                <div class="hero-divider"></div>
+            </div>
 
-			{categoryPosts.length > 0 ? (
-			<div class="posts-grid">
-				{categoryPosts.map((post) => (
-				<article class="post-card card">
-					<a href={`/blog/${post.slug}/`} class="post-link">
-						{post.data.heroImage && (
-						<div class="post-image-container">
-							<img
-								class="post-image"
-								width={post.data.heroImage.width}
-								height={post.data.heroImage.height}
-								src={post.data.heroImage.src}
-								alt={post.data.title}
-								loading="lazy"
-								decoding="async"
-							/>
-						</div>
-						)}
+            {categoryPosts.length > 0 ? (
+                <div class="posts-grid">
+                    {categoryPosts.map((post) => (
+                        <a href={`/blog/${post.slug}/`} class="pcard-link">
+                            <article class="pcard">
+                                {post.data.heroImage && (
+                                    <div class="pcard-img-wrap">
+                                        <img
+                                            class="pcard-img"
+                                            src={post.data.heroImage.src}
+                                            width={post.data.heroImage.width}
+                                            height={post.data.heroImage.height}
+                                            alt={post.data.title}
+                                            loading="lazy"
+                                            decoding="async"
+                                        />
+                                    </div>
+                                )}
+                                <div class="pcard-body">
+                                    <div class="pcard-meta-top">
+                                        <span class="tag-chip">{decodedCategory}</span>
+                                        <time class="card-date">
+                                            <FormattedDate date={post.data.pubDate} />
+                                        </time>
+                                    </div>
+                                    <h3 class="pcard-title">{post.data.title}</h3>
+                                    {post.data.description && (
+                                        <p class="pcard-desc">{post.data.description}</p>
+                                    )}
+                                    {post.data.tags && post.data.tags.length > 0 && (
+                                        <div class="tag-row pcard-tags">
+                                            {post.data.tags.slice(0, 4).map(tag => (
+                                                <span class="tag-dot">#{tag}</span>
+                                            ))}
+                                            {post.data.tags.length > 4 && (
+                                                <span class="tag-dot tag-more">+{post.data.tags.length - 4}</span>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            </article>
+                        </a>
+                    ))}
+                </div>
+            ) : (
+                <div class="empty-state">
+                    <div class="empty-icon">—</div>
+                    <h3>此分類暫無文章</h3>
+                    <p>「{decodedCategory}」分類下還沒有文章</p>
+                </div>
+            )}
+        </main>
 
-						<div class="post-content">
-							<h3 class="post-title">
-								{post.data.title}
-							</h3>
-
-							{post.data.description && (
-							<p class="post-description">
-								{post.data.description}
-							</p>
-							)}
-
-							<div class="post-meta">
-								<div class="post-tags">
-									{post.data.tags && post.data.tags.slice(0, 3).map(tag => (
-									<span>#{tag}</span>
-									))}
-									{post.data.tags && post.data.tags.length > 3 && (
-									<span class="tag-more">+{post.data.tags.length - 3}</span>
-									)}
-								</div>
-
-								<time class="post-date">
-									<FormattedDate date={post.data.pubDate} />
-								</time>
-							</div>
-						</div>
-					</a>
-				</article>
-				))}
-			</div>
-			) : (
-			<div class="empty-state">
-				<div class="empty-icon">📄</div>
-				<h3>此分類暫無文章</h3>
-				<p>「{decodedCategory}」分類下還沒有文章</p>
-			</div>
-			)}
-		</main>
-
-		<Footer />
-
-	</body>
+        <Footer />
+    </body>
 </html>
+
+<style>
+/* ── Breadcrumb ── */
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.8rem;
+    color: rgb(var(--text-muted));
+    margin-bottom: 2rem;
+}
+.breadcrumb a {
+    color: rgb(var(--text-muted));
+    text-decoration: none;
+    transition: color 0.2s ease;
+}
+.breadcrumb a:hover { color: var(--accent); opacity: 1; }
+.bc-sep { opacity: 0.4; }
+.bc-current { color: rgb(var(--gray)); font-weight: 500; }
+
+/* ── Page Header ── */
+.page-header { text-align: center; margin-bottom: 3rem; }
+
+.cat-eyebrow {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--accent);
+    margin-bottom: 0.75rem;
+}
+
+.page-sub {
+    font-size: clamp(0.9rem, 3vw, 1.05rem);
+    color: rgb(var(--gray));
+    margin: 0.5rem 0 0;
+}
+.accent-num {
+    color: var(--accent);
+    font-weight: 700;
+}
+
+/* ── Posts Grid ── */
+.posts-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: clamp(1rem, 2.5vw, 1.75rem);
+    margin-bottom: 3rem;
+}
+
+/* ── Post Card ── */
+.pcard-link {
+    display: block;
+    text-decoration: none;
+    color: inherit;
+}
+.pcard-link:hover { opacity: 1; }
+
+.pcard {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    background: rgba(var(--bg-card), 0.8);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(var(--border), 0.3);
+    border-radius: 14px;
+    overflow: hidden;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease, transform 0.3s ease;
+}
+.pcard::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.07), transparent);
+    z-index: 1;
+}
+.pcard-link:hover .pcard {
+    border-color: rgba(var(--accent), 0.45);
+    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.28);
+    transform: translateY(-3px);
+}
+
+.pcard-img-wrap {
+    overflow: hidden;
+    aspect-ratio: 16 / 9;
+    flex-shrink: 0;
+}
+.pcard-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    border-radius: 0;
+    transition: transform 0.45s ease;
+}
+.pcard-link:hover .pcard-img { transform: scale(1.05); }
+
+.pcard-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 1.1rem 1.25rem 1.25rem;
+}
+
+.pcard-meta-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.6rem;
+}
+
+.pcard-title {
+    font-size: clamp(0.95rem, 1.8vw, 1.15rem);
+    font-weight: 700;
+    color: rgb(var(--black));
+    line-height: 1.3;
+    margin: 0 0 0.6rem;
+    transition: color 0.3s ease;
+}
+.pcard-link:hover .pcard-title { color: var(--accent); }
+
+.pcard-desc {
+    font-size: 0.875rem;
+    color: rgb(var(--gray));
+    line-height: 1.6;
+    flex: 1;
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}
+
+.pcard-tags {
+    margin-top: 0.875rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid rgba(var(--border), 0.2);
+}
+
+/* ── Shared chips / tags ── */
+.tag-chip {
+    display: inline-block;
+    padding: 0.22rem 0.6rem;
+    background: rgba(var(--accent), 0.12);
+    color: var(--accent);
+    border: 1px solid rgba(var(--accent), 0.25);
+    border-radius: 6px;
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.card-date {
+    font-size: 0.7rem;
+    color: rgb(var(--text-muted));
+    white-space: nowrap;
+}
+
+.tag-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    align-items: center;
+}
+.tag-dot {
+    font-size: 0.68rem;
+    color: rgb(var(--text-muted));
+    font-weight: 400;
+}
+.tag-more { opacity: 0.6; }
+
+/* ── Responsive ── */
+@media (max-width: 900px) {
+    .posts-grid { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 560px) {
+    .posts-grid { grid-template-columns: 1fr; }
+}
+</style>
