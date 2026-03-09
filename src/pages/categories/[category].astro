@@ -51,13 +51,12 @@ const pageDescription = `瀏覽「${decodedCategory}」分類下的 ${categoryPo
 
             <!-- Page Header -->
             <div class="page-header">
-                <div class="cat-eyebrow">
-                    <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <div class="cat-header-wrapper">
+                    <svg viewBox="0 0 24 24" width="38" height="38" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="cat-icon">
                         {getCategoryIcon(decodedCategory).paths.map(d => <path d={d} />)}
                     </svg>
-                    <span>{decodedCategory}</span>
+                    <h1 class="cat-eyebrow">{decodedCategory}</h1>
                 </div>
-                <h1 class="gradient-text">{decodedCategory}</h1>
                 <p class="page-sub">共 <span class="accent-num">{categoryPosts.length}</span> 篇文章</p>
                 <div class="hero-divider"></div>
             </div>
@@ -141,16 +140,28 @@ const pageDescription = `瀏覽「${decodedCategory}」分類下的 ${categoryPo
 /* ── Page Header ── */
 .page-header { text-align: center; margin-bottom: 3rem; }
 
-.cat-eyebrow {
-    display: inline-flex;
+.cat-header-wrapper {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
     align-items: center;
-    gap: 0.4rem;
-    font-size: 0.7rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.14em;
-    color: var(--accent);
+    gap: 1.25rem;
     margin-bottom: 0.75rem;
+    flex-wrap: wrap;
+}
+
+.cat-icon {
+    color: var(--accent);
+}
+
+.cat-eyebrow {
+    font-size: clamp(2.2rem, 8vw, 3.8rem);
+    font-weight: 800;
+    margin: 0;
+    line-height: 1;
+    color: #ffffff; /* White */
+    text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    letter-spacing: -0.01em;
 }
 
 .page-sub {
