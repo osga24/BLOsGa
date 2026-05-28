@@ -63,10 +63,15 @@
 
 .hero-content {
   margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  text-align: left;
 }
 
 .article-category {
   display: inline-block;
+  align-self: flex-start;
   padding: 0.3rem 0.9rem;
   background: rgba(var(--accent-rgb), 0.12);
   color: var(--accent);
@@ -87,6 +92,7 @@
   margin: 0;
   color: rgb(var(--black));
   letter-spacing: -0.03em;
+  align-self: stretch;
 }
 
 .article-meta-line {
@@ -100,6 +106,7 @@
   padding-top: 1.25rem;
   border-top: 1px solid rgba(var(--border), 0.2);
   font-family: var(--font-brand);
+  align-self: stretch;
 }
 
 .publish-date {
@@ -961,31 +968,6 @@
 .lightbox-image[data-orientation="ultratall"] {
   max-width: min(50vw, 600px);
   max-height: min(90vh, calc(50vw * 2));
-}
-
-.lightbox-close {
-  position: absolute;
-  top: -48px;
-  right: -8px;
-  width: 44px;
-  height: 44px;
-  background: rgba(var(--bg-card), 0.9);
-  border: 1px solid rgba(var(--border), 0.3);
-  border-radius: 50%;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 22px;
-  color: rgb(var(--black));
-  transition: all 0.3s ease;
-  line-height: 1;
-}
-
-.lightbox-close:hover {
-  color: var(--accent);
-  transform: scale(1.1) rotate(90deg);
-  border-color: rgba(var(--accent-rgb), 0.5);
 }
 
 .lightbox-caption {

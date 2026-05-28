@@ -6,7 +6,6 @@
 <div id="lightbox" class="lightbox">
   <div class="lightbox-content">
     <img id="lightbox-image" class="lightbox-image" src="" alt="" />
-    <button class="lightbox-close" id="lightbox-close" aria-label="Close">×</button>
     <div id="lightbox-caption" class="lightbox-caption"></div>
   </div>
 </div>
@@ -16,7 +15,6 @@
     lightbox: HTMLElement | null = null;
     lightboxImage: HTMLImageElement | null = null;
     lightboxCaption: HTMLElement | null = null;
-    lightboxClose: HTMLElement | null = null;
     isInitialized = false;
 
     constructor() {
@@ -27,7 +25,6 @@
       this.lightbox = document.getElementById("lightbox");
       this.lightboxImage = document.getElementById("lightbox-image") as HTMLImageElement | null;
       this.lightboxCaption = document.getElementById("lightbox-caption");
-      this.lightboxClose = document.getElementById("lightbox-close");
       if (!this.lightbox || !this.lightboxImage) return;
 
       this.lightbox.style.display = "none";
@@ -37,7 +34,6 @@
     }
 
     bindEvents() {
-      this.lightboxClose?.addEventListener("click", () => this.close());
       this.lightbox?.addEventListener("click", (e) => {
         if (e.target === this.lightbox) this.close();
       });

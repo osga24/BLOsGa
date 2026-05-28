@@ -29,12 +29,14 @@ export function getCategoryMetadata(category: string) {
 // Header Links, src/components/Header.astro
 export const HeaderLinks = [
   { href: "/", title: "Home" },
+  { href: "/category/", title: "Folder" },
   { href: "/tags/", title: "Tags" },
 ];
 
 // Footer Links, src/components/Footer.astro
 export const FooterLinks = [
   { href: "/", title: "Home" },
+  { href: "/category/", title: "Folder" },
   { href: "/tags/", title: "Tags" },
   { href: "/rss.xml", title: "RSS" },
 ];
