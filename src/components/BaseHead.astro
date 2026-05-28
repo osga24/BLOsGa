@@ -12,20 +12,28 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 const { title, description, image = "/blog-placeholder-1.jpg" } = Astro.props;
 ---
 
-<!-- No-flash theme: resolve saved mode (light/dark/system) before first paint -->
+<!-- No-flash theme: resolve saved mode (light/dark/system) before first paint,
+     and re-apply after each view-transition swap so navigation keeps the theme -->
 <script is:inline>
   (() => {
-    const root = document.documentElement;
-    let mode = "system";
-    try {
-      const saved = localStorage.getItem("theme");
-      if (saved === "light" || saved === "dark" || saved === "system") mode = saved;
-    } catch {}
-    const system = window.matchMedia("(prefers-color-scheme: dark)").matches
-      ? "dark"
-      : "light";
-    root.dataset.themeMode = mode;
-    root.dataset.theme = mode === "system" ? system : mode;
+    const apply = () => {
+      const root = document.documentElement;
+      let mode = "system";
+      try {
+        const saved = localStorage.getItem("theme");
+        if (saved === "light" || saved === "dark" || saved === "system") mode = saved;
+      } catch {}
+      const system = window.matchMedia("(prefers-color-scheme: dark)").matches
+        ? "dark"
+        : "light";
+      root.dataset.themeMode = mode;
+      root.dataset.theme = mode === "system" ? system : mode;
+    };
+    apply();
+    if (!window.__themeSwapBound) {
+      window.__themeSwapBound = true;
+      document.addEventListener("astro:after-swap", apply);
+    }
   })();
 </script>
 
