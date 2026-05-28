@@ -1,149 +1,35 @@
 ---
-// SimpleAlertCleaner.astro
-// 只負責清理空的警告框，不處理 Markdown
+// Removes empty callout boxes (.info/.note/.warning/.danger/.success/.tip)
+// that can be produced when authoring callouts in markdown.
 ---
 
 <script>
-// ========== 簡單警告框清理器 ==========
-class SimpleAlertCleaner {
-    constructor() {
-        this.alertTypes = ['info', 'note', 'warning', 'danger', 'success', 'tip'];
-        this.init();
-    }
+  const ALERT_TYPES = ["info", "note", "warning", "danger", "success", "tip"];
 
-    init() {
-        // 等待 DOM 完全載入
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => this.cleanupEmptyAlerts());
-        } else {
-            this.cleanupEmptyAlerts();
-        }
+  function isEmpty(el: Element | null) {
+    if (!el) return true;
+    const text = el.textContent?.trim() ?? "";
+    if (text.length > 0) return false;
+    const html = (el as HTMLElement).innerHTML?.trim() ?? "";
+    return /^(<br\s*\/?>|<p\s*>\s*<\/p>|<div\s*>\s*<\/div>|\s)*$/i.test(html);
+  }
 
-        // 設置觀察器監聽動態添加的元素
-        this.setupObserver();
-    }
+  function cleanup() {
+    ALERT_TYPES.forEach((type) => {
+      document.querySelectorAll(`.article-content .${type}`).forEach((el) => {
+        if (isEmpty(el)) el.remove();
+      });
+    });
+  }
 
-    setupObserver() {
-        const observer = new MutationObserver((mutations) => {
-            let shouldClean = false;
-            mutations.forEach((mutation) => {
-                if (mutation.type === 'childList') {
-                    mutation.addedNodes.forEach((node) => {
-                        if (node.nodeType === 1) { // Element node
-                            // 檢查是否添加了警告框
-                            const hasAlerts = this.alertTypes.some(type => 
-                                node.classList?.contains(type) || 
-                                node.querySelector?.(`.${type}`)
-                            );
-                            if (hasAlerts) {
-                                shouldClean = true;
-                            }
-                        }
-                    });
-                }
-            });
-            if (shouldClean) {
-                setTimeout(() => this.cleanupEmptyAlerts(), 100);
-            }
-        });
-
-        observer.observe(document.body, {
-            childList: true,
-            subtree: true
-        });
-    }
-
-    cleanupEmptyAlerts() {
-        // 清理傳統 class 方式的空警告框
-        this.alertTypes.forEach(type => {
-            const alerts = document.querySelectorAll(`.article-content .${type}, .${type}`);
-            alerts.forEach(alert => {
-                if (this.isEmptyAlert(alert)) {
-                    console.log(`Removing empty ${type} alert:`, alert);
-                    alert.remove();
-                }
-            });
-        });
-
-        // 清理 Alert 組件的空警告框
-        const componentAlerts = document.querySelectorAll('.alert');
-        componentAlerts.forEach(alert => {
-            const alertBody = alert.querySelector('.alert-body');
-            if (alertBody && this.isEmptyAlert(alertBody)) {
-                console.log(`Removing empty component alert:`, alert);
-                alert.remove();
-            }
-        });
-    }
-
-    isEmptyAlert(element) {
-        if (!element) return true;
-
-        // 獲取文字內容（排除空白字符）
-        const textContent = element.textContent?.trim();
-        
-        // 檢查是否有實際的 HTML 內容（排除只有空標籤的情況）
-        const innerHTML = element.innerHTML?.trim();
-        const hasOnlyEmptyTags = innerHTML && /^(<br\s*\/?>|<p\s*>\s*<\/p>|<div\s*>\s*<\/div>|\s)*$/i.test(innerHTML);
-        
-        // 如果沒有文字內容，或者只有空的 HTML 標籤，則認為是空的
-        return !textContent || textContent.length === 0 || hasOnlyEmptyTags;
-    }
-
-    // 手動清理介面
-    clean() {
-        this.cleanupEmptyAlerts();
-    }
-}
-
-// ========== 初始化 ==========
-function initSimpleAlertCleaner() {
-    if (!window.simpleAlertCleaner) {
-        window.simpleAlertCleaner = new SimpleAlertCleaner();
+  function init() {
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", cleanup);
     } else {
-        window.simpleAlertCleaner.clean();
+      cleanup();
     }
-}
+  }
 
-// ========== 事件監聽 ==========
-document.addEventListener('DOMContentLoaded', initSimpleAlertCleaner);
-
-// Astro 頁面轉換支援
-document.addEventListener('astro:page-load', initSimpleAlertCleaner);
-
-// 提供手動清理介面
-window.cleanEmptyAlerts = function() {
-    if (window.simpleAlertCleaner) {
-        window.simpleAlertCleaner.clean();
-    }
-};
-
-// 除錯用：查看所有警告框狀態
-window.debugAlerts = function() {
-    const alertTypes = ['info', 'note', 'warning', 'danger', 'success', 'tip'];
-    console.log('=== Alert Debug Information ===');
-    
-    alertTypes.forEach(type => {
-        const alerts = document.querySelectorAll(`.${type}`);
-        console.log(`${type.toUpperCase()} alerts:`, alerts.length);
-        alerts.forEach((alert, index) => {
-            const isEmpty = window.simpleAlertCleaner ? 
-                window.simpleAlertCleaner.isEmptyAlert(alert) : 
-                !alert.textContent?.trim();
-            console.log(`  ${index}: ${isEmpty ? 'EMPTY' : 'HAS CONTENT'}`, alert);
-        });
-    });
-    
-    const componentAlerts = document.querySelectorAll('.alert');
-    console.log(`Component alerts:`, componentAlerts.length);
-    componentAlerts.forEach((alert, index) => {
-        const alertBody = alert.querySelector('.alert-body');
-        const isEmpty = alertBody ? 
-            (window.simpleAlertCleaner ? 
-                window.simpleAlertCleaner.isEmptyAlert(alertBody) : 
-                !alertBody.textContent?.trim()) : 
-            true;
-        console.log(`  ${index}: ${isEmpty ? 'EMPTY' : 'HAS CONTENT'}`, alert);
-    });
-};
+  init();
+  document.addEventListener("astro:page-load", cleanup);
 </script>

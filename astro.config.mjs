@@ -1,19 +1,50 @@
 // @ts-check
-import { defineConfig } from 'astro/config';
-import mdx from '@astrojs/mdx';
-import sitemap from '@astrojs/sitemap';
-import tailwindcss from '@tailwindcss/vite';
-import react from '@astrojs/react';
+import { defineConfig } from "astro/config";
+import mdx from "@astrojs/mdx";
+
+import sitemap from "@astrojs/sitemap";
+import { remarkModifiedTime } from "./src/utils/remark-modified-time.mjs";
+import partytown from "@astrojs/partytown";
+import pagefind from "astro-pagefind";
+import tailwindcss from "@tailwindcss/vite";
 
 // https://astro.build/config
 export default defineConfig({
-    site: 'https://blog.osga.dev',
-    integrations: [mdx(), sitemap(), react()],
-    vite:{
-        plugins:[tailwindcss()]
-    },
-	// experimental:{
-	// 	responsiveImages: true
-	// }
+  vite: {
+    plugins: [tailwindcss()],
+  },
+  site: "https://example.com",
+  trailingSlash: "always",
 
+  prefetch: {
+    prefetchAll: true,
+    defaultStrategy: "viewport",
+  },
+
+  experimental: {},
+
+  image: {
+    remotePatterns: [
+      {
+        protocol: "https",
+        hostname: "images.unsplash.com",
+      },
+    ],
+  },
+
+  markdown: {
+    remarkPlugins: [remarkModifiedTime],
+  },
+  integrations: [
+    mdx(),
+    sitemap(),
+    pagefind(),
+
+    partytown({
+      config: {
+        forward: ["dataLayer.push"],
+        debug: false,
+      },
+    }),
+  ],
 });

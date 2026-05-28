@@ -1,0 +1,47 @@
+---
+import "@fontsource/jetbrains-mono/400.css";
+import "@fontsource/jetbrains-mono/500.css";
+import "@fontsource/jetbrains-mono/700.css";
+import "../assets/app.css";
+
+import BaseHead from "@components/BaseHead.astro";
+import Header from "@components/Header.astro";
+import Footer from "@components/Footer.astro";
+
+const { title, description, image, fullWidth = false } = Astro.props;
+---
+
+<!doctype html>
+<html lang="zh-TW">
+  <head>
+    <BaseHead title={title} description={description} image={image} />
+  </head>
+  <body class="site-body">
+    <Header />
+    <main class:list={["site-main", { "site-main--full": fullWidth }]}>
+      <slot />
+    </main>
+    <Footer />
+  </body>
+</html>
+
+<style>
+  .site-body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+  }
+
+  .site-main {
+    flex: 1 1 auto;
+    width: 100%;
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: clamp(1.5rem, 4vw, 2.75rem) clamp(1rem, 3vw, 1.5rem);
+  }
+
+  .site-main--full {
+    max-width: none;
+    padding: 0;
+  }
+</style>

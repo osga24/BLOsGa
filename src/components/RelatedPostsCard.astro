@@ -1,0 +1,78 @@
+---
+import { getCollection } from "astro:content";
+import type { CollectionEntry } from "astro:content";
+import PostCard from "@components/CommonCard.astro";
+
+const { currentCategory, currentSlug } = Astro.props;
+
+async function getRelatedArticlesByCategory(): Promise<
+  CollectionEntry<"posts">[]
+> {
+  const allPosts = await getCollection("posts");
+  return allPosts
+    .filter(
+      (post) =>
+        post.data.category === currentCategory && post.id !== currentSlug,
+    )
+    .sort(
+      (a, b) =>
+        new Date(b.data.pubDate).valueOf() - new Date(a.data.pubDate).valueOf(),
+    )
+    .slice(0, 3);
+}
+
+const relatedPosts = await getRelatedArticlesByCategory();
+---
+
+{
+  relatedPosts.length > 0 && (
+    <section class="related">
+      <div class="related-header">
+        <span class="related-label">Related</span>
+      </div>
+      <div class="related-grid">
+        {relatedPosts.map((post) => (
+          <PostCard post={post} />
+        ))}
+      </div>
+    </section>
+  )
+}
+
+<style>
+  .related-header {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.5rem;
+  }
+  .related-header::after {
+    content: "";
+    flex: 1;
+    height: 1px;
+    background: rgba(var(--border), 0.3);
+  }
+  .related-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--accent);
+    font-family: var(--font-brand);
+  }
+  .related-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1.25rem;
+  }
+  @media (max-width: 900px) {
+    .related-grid {
+      grid-template-columns: repeat(2, 1fr);
+    }
+  }
+  @media (max-width: 560px) {
+    .related-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+</style>

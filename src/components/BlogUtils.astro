@@ -1,98 +1,101 @@
 ---
-// BlogUtils.astro
-// 部落格相關工具功能：目錄生成、圖片說明文字
+// Article enhancements: table of contents, image captions, code copy buttons.
 ---
 
 <script>
-// ========== 目錄生成 ==========
-function generateTOC() {
-	const toc = document.getElementById('toc');
-	if (!toc) return;
-	
-	const headings = document.querySelectorAll('.article-content h1, .article-content h2, .article-content h3, .article-content h4, .article-content h5, .article-content h6');
+  // ---------- Table of contents ----------
+  function generateTOC() {
+    const toc = document.getElementById("toc");
+    if (!toc) return;
 
-	if (headings.length === 0) {
-		toc.innerHTML = '<p class="no-headings">此文章沒有標題</p>';
-		return;
-	}
+    const headings = document.querySelectorAll<HTMLElement>(
+      ".article-content h1, .article-content h2",
+    );
 
-	let tocHTML = '<ul class="toc-list">';
+    if (headings.length === 0) {
+      toc.innerHTML = '<p class="no-headings">本文沒有標題</p>';
+      return;
+    }
 
-	headings.forEach((heading, index) => {
-		if (!heading.id) {
-			heading.id = `heading-${index}`;
-		}
+    let html = '<ul class="toc-list">';
+    headings.forEach((heading, index) => {
+      if (!heading.id) heading.id = `heading-${index}`;
+      const level = parseInt(heading.tagName.charAt(1));
+      const indent = Math.max(0, (level - 1) * 14);
+      html += `<li class="toc-item toc-level-${level}" style="margin-left:${indent}px;"><a href="#${heading.id}" class="toc-link">${heading.textContent}</a></li>`;
+    });
+    html += "</ul>";
+    toc.innerHTML = html;
 
-		const level = parseInt(heading.tagName.charAt(1));
-		const text = heading.textContent;
-		const indent = Math.max(0, (level - 1) * 20);
+    toc.querySelectorAll<HTMLAnchorElement>(".toc-link").forEach((link) => {
+      link.addEventListener("click", (e) => {
+        e.preventDefault();
+        const id = link.getAttribute("href")!.substring(1);
+        const target = document.getElementById(id);
+        if (!target) return;
+        const y = target.getBoundingClientRect().top + window.scrollY - 90;
+        window.scrollTo({ top: y, behavior: "smooth" });
+        history.pushState(null, "", `#${id}`);
+      });
+    });
+  }
 
-		tocHTML += `
-			<li class="toc-item toc-level-${level}" style="margin-left: ${indent}px;">
-				<a href="#${heading.id}" class="toc-link">${text}</a>
-			</li>
-		`;
-	});
+  // ---------- Image captions ----------
+  function addImageCaptions() {
+    document.querySelectorAll<HTMLImageElement>(".article-content img").forEach((img) => {
+      if (img.parentElement?.classList.contains("image-figure")) return;
+      const alt = img.getAttribute("alt");
+      if (!alt || !alt.trim()) return;
+      const figure = document.createElement("figure");
+      figure.className = "image-figure";
+      const caption = document.createElement("figcaption");
+      caption.className = "image-caption";
+      caption.textContent = alt;
+      img.parentNode?.insertBefore(figure, img);
+      figure.appendChild(img);
+      figure.appendChild(caption);
+    });
+  }
 
-	tocHTML += '</ul>';
-	toc.innerHTML = tocHTML;
+  // ---------- Code copy buttons ----------
+  const COPY_ICON =
+    '<svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>';
+  const CHECK_ICON = '<svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>';
 
-	const tocLinks = toc.querySelectorAll('.toc-link');
-	tocLinks.forEach(link => {
-		link.addEventListener('click', (e) => {
-			e.preventDefault();
-			const targetId = link.getAttribute('href').substring(1);
-			const targetElement = document.getElementById(targetId);
+  function addCopyButtons() {
+    document.querySelectorAll<HTMLElement>(".article-content pre").forEach((pre) => {
+      if (pre.querySelector(".copy-button")) return;
+      const btn = document.createElement("button");
+      btn.type = "button";
+      btn.className = "copy-button";
+      btn.setAttribute("aria-label", "複製程式碼");
+      btn.innerHTML = COPY_ICON;
+      btn.addEventListener("click", async () => {
+        const code = pre.querySelector("code")?.textContent ?? pre.textContent ?? "";
+        try {
+          await navigator.clipboard.writeText(code);
+          btn.classList.add("copied");
+          btn.innerHTML = CHECK_ICON;
+          setTimeout(() => {
+            btn.classList.remove("copied");
+            btn.innerHTML = COPY_ICON;
+          }, 1800);
+        } catch {}
+      });
+      pre.appendChild(btn);
+    });
+  }
 
-			if (targetElement) {
-				const yOffset = -100;
-				const y = targetElement.getBoundingClientRect().top + window.pageYOffset + yOffset;
+  function init() {
+    addImageCaptions();
+    addCopyButtons();
+    generateTOC();
+  }
 
-				window.scrollTo({
-					top: y,
-					behavior: 'smooth'
-				});
-
-				history.pushState(null, null, `#${targetId}`);
-			}
-		});
-	});
-}
-
-// ========== 圖片說明文字 ==========
-function addImageCaptions() {
-	const images = document.querySelectorAll('.article-content img');
-
-	images.forEach(img => {
-		if (img.parentElement.classList.contains('image-figure')) {
-			return;
-		}
-
-		const altText = img.getAttribute('alt');
-		if (altText && altText.trim() !== '') {
-			const figure = document.createElement('figure');
-			figure.className = 'image-figure';
-
-			const caption = document.createElement('figcaption');
-			caption.className = 'image-caption';
-			caption.textContent = altText;
-
-			img.parentNode.insertBefore(figure, img);
-			figure.appendChild(img);
-			figure.appendChild(caption);
-		}
-	});
-}
-
-// ========== 初始化部落格工具 ==========
-function initBlogUtils() {
-	addImageCaptions();
-	generateTOC();
-}
-
-// ========== 事件監聽 ==========
-document.addEventListener('DOMContentLoaded', initBlogUtils);
-
-// Astro 頁面轉換支援
-document.addEventListener('astro:page-load', initBlogUtils);
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+  document.addEventListener("astro:page-load", init);
 </script>

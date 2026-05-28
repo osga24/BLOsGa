@@ -1,33 +1,116 @@
 ---
+import Link from "@components/Links.astro";
+import { BRAND_NAME, FooterLinks, SocialLinks } from "@consts";
 const today = new Date();
-import '../styles/global.css';
 ---
 
-<hr class="footer-divider">
-<footer class="footer">
-	&copy; {today.getFullYear()} OsGa. All rights reserved.<br/>
+<footer class="site-footer">
+  <div class="footer-inner">
+    <div class="footer-links">
+      {FooterLinks.map((link) => <Link href={link.href}>{link.title}</Link>)}
+    </div>
+
+    <div class="footer-social">
+      {
+        SocialLinks.map((link) => (
+          <a href={link.href} class="footer-icon" aria-label={link.label} target="_blank" rel="noopener">
+            <i class={link.icon}></i>
+          </a>
+        ))
+      }
+    </div>
+
+    <p class="footer-copy">
+      <a href="/" class="brand-mark">{BRAND_NAME}</a> &copy; {today.getFullYear()}
+    </p>
+  </div>
 </footer>
 
 <style>
-	.footer-divider {
-		border: none;
-		height: 1px;
-		background: linear-gradient(to right, transparent, rgba(var(--border), 0.2), transparent);
-		margin: 3rem 0 0 0;
-	}
+  .site-footer {
+    margin-top: auto;
+    border-top: 1px solid rgba(var(--border), 0.15);
+  }
+  .footer-inner {
+    max-width: 72rem;
+    margin: 0 auto;
+    padding: 2.5rem 1.5rem;
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.25rem;
+  }
+  .footer-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+    order: 1;
+  }
+  .footer-links :global(a) {
+    color: rgb(var(--gray));
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-family: var(--font-brand);
+    transition: color 0.25s ease;
+  }
+  .footer-links :global(a:hover) {
+    color: var(--accent);
+  }
+  .footer-social {
+    display: flex;
+    gap: 0.5rem;
+    order: 3;
+  }
+  .footer-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.25rem;
+    height: 2.25rem;
+    border-radius: 999px;
+    color: rgb(var(--gray));
+    border: 1px solid rgba(var(--border), 0.3);
+    transition: all 0.25s ease;
+  }
+  .footer-icon:hover {
+    color: var(--accent);
+    border-color: rgba(var(--accent-rgb), 0.45);
+    transform: translateY(-2px);
+  }
+  .footer-icon i {
+    width: 1.05rem;
+    height: 1.05rem;
+  }
+  .footer-copy {
+    order: 2;
+    margin: 0;
+    font-size: 0.82rem;
+    color: rgb(var(--text-muted));
+    font-family: var(--font-brand);
+  }
+  .footer-copy .brand-mark {
+    color: rgb(var(--gray));
+    text-decoration: none;
+  }
+  .footer-copy .brand-mark:hover {
+    color: var(--accent);
+  }
 
-	.footer {
-		padding: 2rem 1rem 4rem 1rem;
-		color: rgba(var(--text-muted), 0.6);
-		text-align: center;
-		font-size: 0.85rem;
-		font-weight: 400;
-		border-top: 1px solid rgba(var(--border), 0.08);
-		margin-top: 2rem;
-	}
-
-	.footer:hover {
-		color: rgba(var(--text-muted), 0.8);
-		transition: color 0.3s ease;
-	}
+  @media (max-width: 640px) {
+    .footer-inner {
+      flex-direction: column;
+      text-align: center;
+    }
+    .footer-links {
+      order: 1;
+      justify-content: center;
+    }
+    .footer-social {
+      order: 2;
+    }
+    .footer-copy {
+      order: 3;
+    }
+  }
 </style>

@@ -1,0 +1,69 @@
+---
+import { getCollection } from "astro:content";
+import BaseLayout from "@layouts/BaseLayout.astro";
+import { Tags_TITLE, Tags_DESCRIPTION } from "@consts";
+
+const allPosts = await getCollection("posts");
+
+let tagCounts: { [key: string]: number } = {};
+allPosts.forEach((post) => {
+  (post.data.tags || []).forEach((tag) => {
+    if (tag in tagCounts) {
+      tagCounts[tag] += 1;
+    } else {
+      tagCounts[tag] = 1;
+    }
+  });
+});
+
+const tags = Object.keys(tagCounts);
+---
+
+<BaseLayout title={Tags_TITLE} description={Tags_DESCRIPTION}>
+  <h1 class="tags-heading">All Tags</h1>
+  <div class="tags-cloud">
+    {
+      tags.map((tag) => (
+        <a href={`/tags/${tag}/1/`} class="tag-pill">
+          #{tag} <span class="tag-count">{tagCounts[tag]}</span>
+        </a>
+      ))
+    }
+  </div>
+</BaseLayout>
+
+<style>
+  .tags-heading {
+    font-size: clamp(1.5rem, 5vw, 2.2rem);
+    font-weight: 800;
+    color: rgb(var(--black));
+    margin: 0 0 1.75rem;
+  }
+  .tags-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+  }
+  .tag-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.45rem 0.9rem;
+    font-size: 0.85rem;
+    font-family: var(--font-brand);
+    color: rgb(var(--gray));
+    background: rgba(var(--bg-card), 0.6);
+    border: 1px solid rgba(var(--border), 0.3);
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+  .tag-pill:hover {
+    color: var(--accent);
+    border-color: rgba(var(--accent-rgb), 0.45);
+    transform: translateY(-2px);
+  }
+  .tag-count {
+    font-size: 0.72rem;
+    color: rgb(var(--text-muted));
+  }
+</style>

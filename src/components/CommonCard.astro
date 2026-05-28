@@ -1,0 +1,163 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { Image } from "astro:assets";
+import FormattedDate from "@components/FormattedDate.astro";
+
+interface Props {
+  post: CollectionEntry<"posts">;
+}
+
+const { post } = Astro.props;
+const category = post.data.category ?? "";
+const tags = post.data.tags ?? [];
+---
+
+<a href={`/posts/${post.id}/`} class="post-card">
+  <div class="pc-img">
+    {
+      post.data.heroImage ? (
+        <Image src={post.data.heroImage} alt={post.data.title} width={800} />
+      ) : (
+        <div class="pc-img-fallback">{post.data.title.charAt(0)}</div>
+      )
+    }
+  </div>
+  <div class="pc-body">
+    <div class="pc-meta">
+      {category && <span class="pc-chip">{category}</span>}
+      <time class="pc-date"><FormattedDate date={post.data.pubDate} /></time>
+    </div>
+    <h3 class="pc-title">{post.data.title}</h3>
+    {post.data.description && <p class="pc-desc">{post.data.description}</p>}
+    {
+      tags.length > 0 && (
+        <div class="pc-tags">
+          {tags.slice(0, 3).map((tag) => (
+            <span class="pc-tag">#{tag}</span>
+          ))}
+        </div>
+      )
+    }
+  </div>
+</a>
+
+<style>
+  .post-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    text-decoration: none;
+    color: inherit;
+    background: rgba(var(--bg-card), 0.7);
+    border: 1px solid rgba(var(--border), 0.3);
+    overflow: hidden;
+    transition:
+      border-color 0.25s ease,
+      box-shadow 0.25s ease,
+      transform 0.25s ease;
+  }
+  .post-card:hover {
+    border-color: rgba(var(--accent-rgb), 0.5);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
+    transform: translateY(-3px);
+  }
+
+  .pc-img {
+    aspect-ratio: 16 / 9;
+    overflow: hidden;
+    flex-shrink: 0;
+    border-bottom: 1px solid rgba(var(--border), 0.2);
+  }
+  .pc-img :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.4s ease;
+  }
+  .post-card:hover .pc-img :global(img) {
+    transform: scale(1.05);
+  }
+  .pc-img-fallback {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-brand);
+    font-size: 3rem;
+    font-weight: 700;
+    color: rgba(var(--accent-rgb), 0.4);
+    background: rgba(var(--bg-hover), 0.5);
+  }
+
+  .pc-body {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    padding: 1.1rem 1.25rem 1.25rem;
+  }
+
+  .pc-meta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 0.65rem;
+  }
+  .pc-chip {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    background: rgba(var(--accent-rgb), 0.12);
+    border: 1px solid rgba(var(--accent-rgb), 0.25);
+    padding: 0.18rem 0.5rem;
+    font-family: var(--font-brand);
+    white-space: nowrap;
+  }
+  .pc-date {
+    font-size: 0.72rem;
+    color: rgb(var(--text-muted));
+    font-family: var(--font-brand);
+    white-space: nowrap;
+  }
+
+  .pc-title {
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: rgb(var(--black));
+    line-height: 1.35;
+    margin: 0 0 0.5rem;
+    transition: color 0.25s ease;
+  }
+  .post-card:hover .pc-title {
+    color: var(--accent);
+  }
+
+  .pc-desc {
+    color: rgb(var(--gray));
+    font-size: 0.85rem;
+    line-height: 1.6;
+    margin: 0;
+    flex: 1;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .pc-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin-top: 0.9rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid rgba(var(--border), 0.2);
+  }
+  .pc-tag {
+    font-size: 0.68rem;
+    color: rgb(var(--text-muted));
+    font-family: var(--font-brand);
+  }
+</style>
