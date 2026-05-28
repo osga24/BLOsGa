@@ -1,0 +1,153 @@
+---
+import { getCollection, render } from "astro:content";
+import { Image } from "astro:assets";
+import BaseLayout from "@layouts/BaseLayout.astro";
+import RelatedPostsCard from "@components/RelatedPostsCard.astro";
+import FormattedDate from "@components/FormattedDate.astro";
+import Lightbox from "@components/Lightbox.astro";
+import Alert from "@components/Alert.astro";
+import BlogUtils from "@components/BlogUtils.astro";
+import "../../styles/article.css";
+
+export async function getStaticPaths() {
+  const posts = await getCollection("posts");
+  return posts.map((post) => ({
+    params: { slug: post.id },
+    props: post,
+  }));
+}
+
+const post = Astro.props;
+const { Content } = await render(post);
+
+const category = post.data.category ?? "";
+const tags = post.data.tags ?? [];
+const updated = post.data.updatedDate;
+---
+
+<BaseLayout
+  title={post.data.title}
+  description={post.data.description}
+  fullWidth
+>
+  <div class="blog-main">
+    <div class="blog-container">
+      <article class="blog-article">
+        <nav class="breadcrumb">
+          <a href="/">home</a>
+          {
+            category && (
+              <>
+                <span>/</span>
+                <a href={`/category/${category}/1/`}>{category}</a>
+              </>
+            )
+          }
+          <span>/</span>
+          <span>{post.data.title}</span>
+        </nav>
+
+        <header class="article-hero">
+          <div class="hero-content">
+            {category && <span class="article-category">{category}</span>}
+            <h1 class="article-title">{post.data.title}</h1>
+            <div class="article-meta-line">
+              <time class="publish-date">
+                <FormattedDate date={post.data.pubDate} />
+              </time>
+              {
+                updated && (
+                  <time class="update-date">
+                    最後更新 <FormattedDate date={updated} />
+                  </time>
+                )
+              }
+              {
+                tags.length > 0 && (
+                  <div class="hero-tags">
+                    {tags.slice(0, 3).map((tag) => (
+                      <span class="tag">#{tag}</span>
+                    ))}
+                    {tags.length > 3 && (
+                      <span class="tag more">+{tags.length - 3}</span>
+                    )}
+                  </div>
+                )
+              }
+            </div>
+          </div>
+
+          {
+            post.data.heroImage && (
+              <div class="hero-image">
+                <Image
+                  class="hero-img"
+                  src={post.data.heroImage}
+                  alt={post.data.title}
+                  width={1200}
+                  loading="eager"
+                />
+              </div>
+            )
+          }
+        </header>
+
+        <aside class="blog-sidebar">
+          <div class="sidebar-section">
+            <h3 class="sidebar-title">目錄</h3>
+            <nav class="table-of-contents" id="toc"></nav>
+          </div>
+        </aside>
+
+        {
+          post.data.description && (
+            <div class="tldr-section">
+              <h3 class="tldr-title">TL;DR</h3>
+              <p class="tldr-content">{post.data.description}</p>
+            </div>
+          )
+        }
+
+        <div class="article-content">
+          <Content />
+        </div>
+
+        {
+          tags.length > 0 && (
+            <footer class="article-footer">
+              <div class="article-tags">
+                <span class="tags-label">tags</span>
+                {tags.map((tag) => (
+                  <a class="tag" href={`/tags/${tag}/1/`}>
+                    #{tag}
+                  </a>
+                ))}
+              </div>
+            </footer>
+          )
+        }
+      </article>
+
+      {
+        category && (
+          <div class="related-block">
+            <RelatedPostsCard
+              currentCategory={category}
+              currentSlug={post.id}
+            />
+          </div>
+        )
+      }
+    </div>
+  </div>
+
+  <Lightbox />
+  <Alert />
+  <BlogUtils />
+</BaseLayout>
+
+<style>
+  .related-block {
+    margin-top: 3.5rem;
+  }
+</style>

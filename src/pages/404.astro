@@ -1,0 +1,57 @@
+---
+import BaseLayout from "@layouts/BaseLayout.astro";
+const title = `404 - 找不到頁面`;
+const description = `Error 404`;
+---
+
+<BaseLayout title={title} description={description}>
+  <div class="notfound">
+    <h1 class="nf-code brand-mark">404</h1>
+    <p class="nf-text">糟糕，這個頁面不存在。</p>
+    <a class="nf-link" href="/">
+      <i class="icon-[tabler--arrow-left]"></i>
+      返回首頁
+    </a>
+  </div>
+</BaseLayout>
+
+<style>
+  .notfound {
+    text-align: center;
+    padding: clamp(3rem, 12vw, 7rem) 1rem;
+  }
+  .nf-code {
+    font-size: clamp(4rem, 22vw, 9rem);
+    font-weight: 700;
+    color: rgb(var(--black));
+    line-height: 1;
+    margin: 0;
+    letter-spacing: -0.05em;
+  }
+  .nf-text {
+    color: rgb(var(--text-muted));
+    font-family: var(--font-brand);
+    margin: 1rem 0 2rem;
+  }
+  .nf-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.7rem 1.4rem;
+    color: var(--accent);
+    border: 1px solid rgba(var(--accent-rgb), 0.4);
+    background: rgba(var(--accent-rgb), 0.08);
+    font-family: var(--font-brand);
+    font-size: 0.9rem;
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+  .nf-link:hover {
+    background: rgba(var(--accent-rgb), 0.16);
+    transform: translateY(-2px);
+  }
+  .nf-link i {
+    width: 1.05rem;
+    height: 1.05rem;
+  }
+</style>

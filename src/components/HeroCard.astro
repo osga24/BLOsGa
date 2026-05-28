@@ -1,0 +1,177 @@
+---
+import type { CollectionEntry } from "astro:content";
+import { Image } from "astro:assets";
+import FormattedDate from "@components/FormattedDate.astro";
+
+interface Props {
+  post: CollectionEntry<"posts">;
+}
+
+const { post } = Astro.props;
+const category = post.data.category ?? "";
+const tags = post.data.tags ?? [];
+---
+
+<a href={`/posts/${post.id}/`} class="hero-card">
+  <div class="hc-img">
+    {
+      post.data.heroImage ? (
+        <Image src={post.data.heroImage} alt={post.data.title} width={1000} />
+      ) : (
+        <div class="hc-img-fallback">{post.data.title.charAt(0)}</div>
+      )
+    }
+  </div>
+  <div class="hc-body">
+    <span class="hc-label">Featured</span>
+    <div class="hc-meta">
+      {category && <span class="hc-chip">{category}</span>}
+      <time class="hc-date"><FormattedDate date={post.data.pubDate} /></time>
+    </div>
+    <h2 class="hc-title">{post.data.title}</h2>
+    {post.data.description && <p class="hc-desc">{post.data.description}</p>}
+    {
+      tags.length > 0 && (
+        <div class="hc-tags">
+          {tags.slice(0, 4).map((tag) => (
+            <span class="hc-tag">#{tag}</span>
+          ))}
+        </div>
+      )
+    }
+  </div>
+</a>
+
+<style>
+  .hero-card {
+    display: grid;
+    grid-template-columns: 56% 44%;
+    text-decoration: none;
+    color: inherit;
+    background: rgba(var(--bg-card), 0.7);
+    border: 1px solid rgba(var(--border), 0.3);
+    overflow: hidden;
+    transition:
+      border-color 0.25s ease,
+      box-shadow 0.25s ease,
+      transform 0.25s ease;
+  }
+  .hero-card:hover {
+    border-color: rgba(var(--accent-rgb), 0.5);
+    box-shadow: 0 14px 40px rgba(0, 0, 0, 0.22);
+    transform: translateY(-3px);
+  }
+
+  .hc-img {
+    aspect-ratio: 16 / 10;
+    overflow: hidden;
+  }
+  .hc-img :global(img) {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.45s ease;
+  }
+  .hero-card:hover .hc-img :global(img) {
+    transform: scale(1.04);
+  }
+  .hc-img-fallback {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-brand);
+    font-size: 5rem;
+    font-weight: 700;
+    color: rgba(var(--accent-rgb), 0.4);
+    background: rgba(var(--bg-hover), 0.5);
+  }
+
+  .hc-body {
+    display: flex;
+    flex-direction: column;
+    padding: clamp(1.5rem, 3vw, 2.25rem);
+    border-left: 1px solid rgba(var(--border), 0.2);
+  }
+
+  .hc-label {
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: var(--accent);
+    font-family: var(--font-brand);
+    margin-bottom: 0.85rem;
+  }
+
+  .hc-meta {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-bottom: 0.6rem;
+  }
+  .hc-chip {
+    font-size: 0.65rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--accent);
+    background: rgba(var(--accent-rgb), 0.12);
+    border: 1px solid rgba(var(--accent-rgb), 0.25);
+    padding: 0.18rem 0.5rem;
+    font-family: var(--font-brand);
+  }
+  .hc-date {
+    font-size: 0.72rem;
+    color: rgb(var(--text-muted));
+    font-family: var(--font-brand);
+  }
+
+  .hc-title {
+    font-size: clamp(1.3rem, 2.8vw, 1.9rem);
+    font-weight: 800;
+    color: rgb(var(--black));
+    line-height: 1.22;
+    margin: 0 0 0.85rem;
+    transition: color 0.25s ease;
+  }
+  .hero-card:hover .hc-title {
+    color: var(--accent);
+  }
+
+  .hc-desc {
+    color: rgb(var(--gray));
+    font-size: 0.92rem;
+    line-height: 1.65;
+    margin: 0;
+    flex: 1;
+  }
+
+  .hc-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1.1rem;
+    padding-top: 0.85rem;
+    border-top: 1px solid rgba(var(--border), 0.2);
+  }
+  .hc-tag {
+    font-size: 0.7rem;
+    color: rgb(var(--text-muted));
+    font-family: var(--font-brand);
+  }
+
+  @media (max-width: 768px) {
+    .hero-card {
+      grid-template-columns: 1fr;
+    }
+    .hc-img {
+      aspect-ratio: 16 / 9;
+    }
+    .hc-body {
+      border-left: none;
+      border-top: 1px solid rgba(var(--border), 0.2);
+    }
+  }
+</style>

@@ -1,0 +1,117 @@
+---
+export interface Props {
+  currentPage: number;
+  lastPage: number;
+  urlPrev: string | null;
+  urlNext: string | null;
+  basePath: string;
+  maxDisplayedPages: number;
+}
+
+const {
+  currentPage,
+  lastPage,
+  urlPrev,
+  urlNext,
+  basePath,
+  maxDisplayedPages = 5,
+} = Astro.props;
+
+const startPage = Math.max(
+  1,
+  Math.min(
+    currentPage - Math.floor(maxDisplayedPages / 2),
+    lastPage - maxDisplayedPages + 1,
+  ),
+);
+const endPage = Math.min(lastPage, startPage + maxDisplayedPages - 1);
+
+function ensureTrailingSlash(path: string) {
+  return path.endsWith("/") ? path : `${path}/`;
+}
+
+const computedBasePath = basePath ? ensureTrailingSlash(basePath) : "/page/";
+---
+
+{
+  lastPage > 1 && (
+    <nav class="pagination" aria-label="Pagination">
+      {urlPrev && (
+        <a href={ensureTrailingSlash(urlPrev)} aria-label="Previous page" class="pg-arrow">
+          <i class="icon-[tabler--chevron-left]" />
+        </a>
+      )}
+      <ul class="pg-list">
+        {Array.from({ length: endPage - startPage + 1 }, (_, i) => {
+          const pageNumber = startPage + i;
+          const isActive = currentPage === pageNumber;
+          return (
+            <li>
+              <a
+                href={`${computedBasePath}${pageNumber}/`}
+                class:list={["pg-num", { active: isActive }]}
+                aria-current={isActive ? "page" : undefined}
+              >
+                {pageNumber}
+              </a>
+            </li>
+          );
+        })}
+      </ul>
+      {urlNext && (
+        <a href={ensureTrailingSlash(urlNext)} aria-label="Next page" class="pg-arrow">
+          <i class="icon-[tabler--chevron-right]" />
+        </a>
+      )}
+    </nav>
+  )
+}
+
+<style>
+  .pagination {
+    margin-top: 3rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+  }
+  .pg-list {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .pg-num,
+  .pg-arrow {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2.4rem;
+    height: 2.4rem;
+    padding: 0 0.6rem;
+    font-size: 0.85rem;
+    font-family: var(--font-brand);
+    color: rgb(var(--gray));
+    border: 1px solid rgba(var(--border), 0.3);
+    background: rgba(var(--bg-card), 0.4);
+    text-decoration: none;
+    transition: all 0.2s ease;
+  }
+  .pg-num:hover,
+  .pg-arrow:hover {
+    color: var(--accent);
+    border-color: rgba(var(--accent-rgb), 0.45);
+  }
+  .pg-num.active {
+    color: var(--color-primary-content, #fff);
+    background: var(--accent);
+    border-color: var(--accent);
+    font-weight: 700;
+  }
+  .pg-arrow i {
+    width: 1.05rem;
+    height: 1.05rem;
+  }
+</style>

@@ -1,0 +1,223 @@
+@import "tailwindcss";
+
+/* Tailwind Typography — fixes the unstyled markdown (`prose`) rendering */
+@plugin "@tailwindcss/typography";
+
+@plugin "@iconify/tailwind4";
+
+/* daisyUI with two on-brand custom themes that follow the fusion palette */
+@plugin "daisyui" {
+  themes: false;
+}
+
+@plugin "daisyui/theme" {
+  name: "light";
+  default: true;
+  color-scheme: light;
+  --color-base-100: #fffcf4;
+  --color-base-200: #f7f1e3;
+  --color-base-300: #ebe4d3;
+  --color-base-content: #1a1a18;
+  --color-primary: #4f6f63;
+  --color-primary-content: #fffcf4;
+  --color-secondary: #6e8b7f;
+  --color-secondary-content: #fffcf4;
+  --color-accent: #4f6f63;
+  --color-accent-content: #fffcf4;
+  --color-neutral: #2b332f;
+  --color-neutral-content: #f7f1e3;
+  --color-info: #417690;
+  --color-success: #4c8058;
+  --color-warning: #b08840;
+  --color-error: #a65a5a;
+  --radius-selector: 0;
+  --radius-field: 0;
+  --radius-box: 0;
+}
+
+@plugin "daisyui/theme" {
+  name: "dark";
+  color-scheme: dark;
+  --color-base-100: #202123;
+  --color-base-200: #161618;
+  --color-base-300: #2c2e30;
+  --color-base-content: #f7f1e3;
+  --color-primary: #8fb9a6;
+  --color-primary-content: #161618;
+  --color-secondary: #7da592;
+  --color-secondary-content: #161618;
+  --color-accent: #8fb9a6;
+  --color-accent-content: #161618;
+  --color-neutral: #d1cbbe;
+  --color-neutral-content: #161618;
+  --color-info: #6aa3bd;
+  --color-success: #6fae7c;
+  --color-warning: #cda85f;
+  --color-error: #cf8585;
+  --radius-selector: 0;
+  --radius-field: 0;
+  --radius-box: 0;
+}
+
+@theme {
+  --font-mono: "JetBrains Mono", "Menlo", "Monaco", "Consolas",
+    "Liberation Mono", "Courier New", monospace;
+  --font-sans: "Inter", "system-ui", "-apple-system", "Segoe UI", "Roboto",
+    "Helvetica Neue", "Arial", "Noto Sans TC", sans-serif;
+  --font-brand: "JetBrains Mono", "Menlo", "Monaco", monospace;
+}
+
+/* ============================================================
+   Fusion design tokens — osga.dev warmth + BLOsGa structure
+   Token names follow BLOsGa so the rich article CSS can be reused.
+   Defined for both light and dark themes.
+   ============================================================ */
+:root,
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  --accent: #4f6f63;
+  --accent-dark: #3c574d;
+  --accent-rgb: 79, 111, 99;
+
+  --black: 26, 26, 24; /* strong text / headings */
+  --gray: 51, 54, 51; /* body text */
+  --gray-light: 90, 96, 92;
+  --gray-dark: 247, 241, 227; /* page background (cream) */
+  --text-muted: 102, 107, 103;
+  --border: 73, 89, 84;
+  --bg-card: 255, 252, 244;
+  --bg-hover: 235, 228, 211;
+
+  --ease: cubic-bezier(0.2, 0.65, 0.3, 0.9);
+  --theme-duration: 0.32s;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --accent: #8fb9a6;
+  --accent-dark: #7da592;
+  --accent-rgb: 143, 185, 166;
+
+  --black: 247, 241, 227; /* strong text / headings (cream) */
+  --gray: 209, 203, 190; /* body text */
+  --gray-light: 230, 226, 217;
+  --gray-dark: 22, 22, 24; /* page background */
+  --text-muted: 150, 150, 140;
+  --border: 120, 124, 118;
+  --bg-card: 32, 33, 35;
+  --bg-hover: 44, 46, 48;
+}
+
+/* ============================================================
+   Base
+   ============================================================ */
+* {
+  box-sizing: border-box;
+}
+
+/* Design choice: sharp, angular corners everywhere (no rounding) */
+*,
+*::before,
+*::after {
+  border-radius: 0 !important;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--font-sans);
+  background-color: rgb(var(--gray-dark));
+  color: rgb(var(--gray));
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+  transition:
+    background-color var(--theme-duration) var(--ease),
+    color var(--theme-duration) var(--ease);
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-brand);
+  color: rgb(var(--black));
+  letter-spacing: -0.02em;
+}
+
+a {
+  color: var(--accent);
+  text-decoration: none;
+}
+
+::selection {
+  background: rgba(var(--accent-rgb), 0.25);
+}
+
+/* Page navigation: cross-fade between pages */
+@keyframes vt-fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes vt-fade-out {
+  to {
+    opacity: 0;
+  }
+}
+
+::view-transition-old(root) {
+  animation: vt-fade-out 0.26s var(--ease) both;
+}
+::view-transition-new(root) {
+  animation: vt-fade-in 0.26s var(--ease) both;
+}
+
+/* Theme toggle: disable the fade so the circular clip wipe runs cleanly */
+html[data-theme-transition]::view-transition-old(root),
+html[data-theme-transition]::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+}
+
+/* Brand wordmark helper used by header */
+.brand-mark {
+  font-family: var(--font-brand);
+  font-weight: 700;
+  letter-spacing: -0.04em;
+}
+
+.sr-only {
+  position: absolute !important;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  body {
+    transition: none;
+  }
+}
