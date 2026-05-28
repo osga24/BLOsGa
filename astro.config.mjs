@@ -13,7 +13,7 @@ export default defineConfig({
   vite: {
     plugins: [tailwindcss()],
   },
-  site: "https://example.com",
+  site: "https://blog.osga.dev",
   trailingSlash: "always",
 
   prefetch: {
