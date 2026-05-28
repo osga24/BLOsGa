@@ -9,7 +9,7 @@ interface Props {
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
-const { title, description, image = "/blog-placeholder-1.jpg" } = Astro.props;
+const { title, description, image = "/og-image.png" } = Astro.props;
 ---
 
 <!-- No-flash theme: resolve saved mode (light/dark/system) before first paint,
@@ -21,7 +21,8 @@ const { title, description, image = "/blog-placeholder-1.jpg" } = Astro.props;
       let mode = "system";
       try {
         const saved = localStorage.getItem("theme");
-        if (saved === "light" || saved === "dark" || saved === "system") mode = saved;
+        if (saved === "light" || saved === "dark" || saved === "system")
+          mode = saved;
       } catch {}
       const system = window.matchMedia("(prefers-color-scheme: dark)").matches
         ? "dark"
@@ -40,7 +41,7 @@ const { title, description, image = "/blog-placeholder-1.jpg" } = Astro.props;
 <!-- Global Metadata -->
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="icon" type="image/svg+xml" href="/favicon.ico" />
 <meta name="generator" content={Astro.generator} />
 
 <!-- Canonical URL -->
