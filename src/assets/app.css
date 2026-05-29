@@ -30,9 +30,9 @@
   --color-success: #4c8058;
   --color-warning: #b08840;
   --color-error: #a65a5a;
-  --radius-selector: 0;
-  --radius-field: 0;
-  --radius-box: 0;
+  --radius-selector: 0.5rem;
+  --radius-field: 0.5rem;
+  --radius-box: 0.75rem;
 }
 
 @plugin "daisyui/theme" {
@@ -54,9 +54,9 @@
   --color-success: #6fae7c;
   --color-warning: #cda85f;
   --color-error: #cf8585;
-  --radius-selector: 0;
-  --radius-field: 0;
-  --radius-box: 0;
+  --radius-selector: 0.5rem;
+  --radius-field: 0.5rem;
+  --radius-box: 0.75rem;
 }
 
 @theme {
@@ -115,13 +115,6 @@
    ============================================================ */
 * {
   box-sizing: border-box;
-}
-
-/* Design choice: sharp, angular corners everywhere (no rounding) */
-*,
-*::before,
-*::after {
-  border-radius: 0 !important;
 }
 
 html {
