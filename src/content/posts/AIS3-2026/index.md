@@ -1,6 +1,6 @@
 ---
 title: 關於我擔任 AIS3 2026 助教，發生的一些有趣小記
-pubDate: 2026-06-23
+pubDate: 2026-09-02
 description: "AIS3 2026 助教奇遇日記"
 heroImage: "hero.png"
 tags: [AIS3, TA]
