@@ -2,6 +2,7 @@
 import BaseHead from "@components/BaseHead.astro";
 import Sidebar from "@components/Sidebar.astro";
 import Footer from "@components/Footer.astro";
+import SearchDialog from "@components/SearchDialog.astro";
 
 type Props = {
   title: string;
@@ -45,6 +46,7 @@ const { wide = false, ...props } = Astro.props;
         </div>
       )
     }
+    <SearchDialog />
   </body>
 </html>
 

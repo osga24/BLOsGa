@@ -37,6 +37,8 @@ const minutes = remarkPluginFrontmatter.minutesRead as number | undefined;
   <TableOfContents slot="sidebar" headings={headings} />
 
   <article class="post" data-pagefind-body>
+    <span hidden data-pagefind-meta={`date:${formatDate(pubDate)}`}></span>
+    {category && <span hidden data-pagefind-meta={`category:${category}`} data-pagefind-filter={`category:${category}`}></span>}
     <header class="post-header">
       <p class="post-meta" data-pagefind-ignore>
         <time datetime={pubDate.toISOString()}>{formatDate(pubDate)}</time>
