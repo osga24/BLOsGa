@@ -1,5 +1,6 @@
-import { defineCollection, z } from "astro:content";
+import { defineCollection } from "astro:content";
 import { glob } from "astro/loaders";
+import { z } from "astro/zod";
 
 const posts = defineCollection({
   loader: glob({
@@ -16,7 +17,7 @@ const posts = defineCollection({
       heroImage: image().optional(),
       tags: z.array(z.string()).default([]),
       category: z.string().optional(),
-      draft: z.boolean().optional(),
+      draft: z.boolean().default(false),
       language: z.string().optional(),
     }),
 });

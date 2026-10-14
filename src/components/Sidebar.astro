@@ -1,0 +1,224 @@
+---
+import { Icon } from "astro-icon/components";
+import ThemeToggle from "@components/ThemeToggle.astro";
+import { NAV_LINKS, SITE_AUTHOR, SITE_INTRO, SOCIAL_LINKS } from "@consts";
+
+const path = Astro.url.pathname;
+const isActive = (href: string) =>
+  href === "/"
+    ? path === "/" || path.startsWith("/page/") || path.startsWith("/posts/")
+    : path.startsWith(href);
+---
+
+<aside class="sidebar">
+  <div class="sidebar-top">
+    <a class="brand" href="/" aria-label="BLOsGa 首頁">
+      <span class="wordmark">{SITE_AUTHOR}</span>
+      <span class="brand-sub">Blog</span>
+    </a>
+    <p class="intro">{SITE_INTRO}</p>
+
+    <div class="actions">
+      {
+        SOCIAL_LINKS.map((link) => (
+          <a
+            class="icon-button interactive-link hover-scale"
+            href={link.href}
+            aria-label={link.label}
+            {...(link.href.startsWith("http") ? { target: "_blank", rel: "noopener" } : {})}
+          >
+            <Icon name={link.icon} />
+          </a>
+        ))
+      }
+      <ThemeToggle />
+    </div>
+  </div>
+
+  <nav class="site-nav" aria-label="主選單">
+    <ul class="nav-list">
+      {
+        NAV_LINKS.map((item) => (
+          <li>
+            <a class:list={["nav-link", { "is-active": isActive(item.href) }]} href={item.href}>
+              {item.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </nav>
+
+  <div class="sidebar-extra">
+    <slot />
+  </div>
+</aside>
+
+<style>
+  .sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 2.75rem;
+  }
+
+  .brand {
+    display: inline-flex;
+    flex-direction: column;
+    line-height: 1;
+  }
+
+  .wordmark {
+    font-weight: 700;
+    font-size: 3rem;
+    letter-spacing: -0.06em;
+    color: var(--text);
+    transition: color var(--theme-duration) var(--ease);
+  }
+
+  .brand-sub {
+    margin-top: 0.45rem;
+    font-size: 0.8rem;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .brand:hover .wordmark {
+    color: var(--accent);
+  }
+
+  .intro {
+    margin: 1.25rem 0 0;
+    font-size: 0.82rem;
+    line-height: 1.7;
+    color: var(--muted);
+    white-space: pre-line;
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 1.25rem;
+  }
+
+  .nav-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+  }
+
+  .nav-link {
+    display: block;
+    padding-left: 0.7rem;
+    border-left: 1.5px solid transparent;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    transition:
+      color var(--theme-duration) var(--ease),
+      border-color var(--theme-duration) var(--ease);
+  }
+
+  .nav-link:hover {
+    color: var(--text);
+  }
+
+  .nav-link.is-active {
+    color: var(--text);
+    border-left-color: var(--text);
+  }
+
+  .sidebar-extra:empty {
+    display: none;
+  }
+
+  /* Mobile / tablet: compact header + bottom pill nav (osga.dev pattern) */
+  @media (max-width: 959px) {
+    .sidebar {
+      gap: 0;
+    }
+
+    .sidebar-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .brand {
+      flex-direction: row;
+      align-items: baseline;
+      gap: 0.6rem;
+    }
+
+    .wordmark {
+      font-size: 2rem;
+    }
+
+    .brand-sub {
+      margin-top: 0;
+      letter-spacing: 0.2em;
+      font-size: 0.7rem;
+    }
+
+    .intro {
+      display: none;
+    }
+
+    .actions {
+      margin-top: 0;
+      flex-wrap: nowrap;
+      gap: 0.4rem;
+    }
+
+    .site-nav {
+      position: fixed;
+      bottom: 1.25rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 40;
+      background: var(--bg);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 0.4rem 0.55rem;
+      max-width: calc(100vw - 2rem);
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.06);
+      transition:
+        background-color var(--theme-duration) var(--ease),
+        border-color var(--theme-duration) var(--ease);
+    }
+
+    .nav-list {
+      flex-direction: row;
+      gap: 0.15rem;
+      white-space: nowrap;
+    }
+
+    .nav-link {
+      padding: 0.35rem 0.75rem;
+      border-left: 0;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+    }
+
+    .nav-link.is-active {
+      background: var(--line);
+    }
+
+    .sidebar-extra {
+      display: none;
+    }
+  }
+
+  @media (max-width: 420px) {
+    .actions :global(a[aria-label="RSS"]) {
+      display: none;
+    }
+  }
+</style>

@@ -1,47 +1,85 @@
 ---
-import "@fontsource/jetbrains-mono/400.css";
-import "@fontsource/jetbrains-mono/500.css";
-import "@fontsource/jetbrains-mono/700.css";
-import "../assets/app.css";
-
 import BaseHead from "@components/BaseHead.astro";
-import Header from "@components/Header.astro";
+import Sidebar from "@components/Sidebar.astro";
 import Footer from "@components/Footer.astro";
 
-const { title, description, image, fullWidth = false } = Astro.props;
+type Props = {
+  title: string;
+  description: string;
+  image?: string;
+  type?: "website" | "article";
+};
+
+const props = Astro.props;
 ---
 
 <!doctype html>
 <html lang="zh-TW">
   <head>
-    <BaseHead title={title} description={description} image={image} />
+    <BaseHead {...props} />
+    <slot name="head" />
   </head>
-  <body class="site-body">
-    <Header />
-    <main class:list={["site-main", { "site-main--full": fullWidth }]}>
-      <slot />
-    </main>
-    <Footer />
+  <body>
+    <div class="shell">
+      <div class="shell-side">
+        <Sidebar>
+          <slot name="sidebar" />
+        </Sidebar>
+      </div>
+      <main class="shell-main">
+        <slot />
+        <Footer />
+      </main>
+    </div>
   </body>
 </html>
 
 <style>
-  .site-body {
-    display: flex;
-    flex-direction: column;
-    min-height: 100vh;
+  .shell {
+    display: grid;
+    grid-template-columns: 13rem minmax(0, var(--content-width));
+    justify-content: center;
+    column-gap: clamp(3rem, 7vw, 6rem);
+    padding: 12vh 1.5rem 3rem;
   }
 
-  .site-main {
-    flex: 1 1 auto;
-    width: 100%;
-    max-width: 72rem;
-    margin: 0 auto;
-    padding: clamp(1.5rem, 4vw, 2.75rem) clamp(1rem, 3vw, 1.5rem);
+  .shell-side {
+    position: sticky;
+    top: 12vh;
+    align-self: start;
+    max-height: 82vh;
+    overflow-y: auto;
+    scrollbar-width: none;
   }
 
-  .site-main--full {
-    max-width: none;
-    padding: 0;
+  .shell-side::-webkit-scrollbar {
+    display: none;
+  }
+
+  .shell-main {
+    min-width: 0;
+  }
+
+  @media (max-width: 959px) {
+    .shell {
+      grid-template-columns: minmax(0, 1fr);
+      max-width: calc(var(--content-width) + 2.5rem);
+      margin: 0 auto;
+      row-gap: 3rem;
+      padding: 1.75rem 1.25rem 7rem;
+    }
+
+    .shell-side {
+      position: static;
+      max-height: none;
+      overflow: visible;
+    }
+  }
+
+  @media (max-width: 520px) {
+    .shell {
+      padding: 1.25rem 1rem 7rem;
+      row-gap: 2.25rem;
+    }
   }
 </style>

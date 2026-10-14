@@ -1,32 +1,50 @@
 ---
 import BaseLayout from "@layouts/BaseLayout.astro";
-import {
-  SEARCH_PAGE_TITLE,
-  SEARCH_PAGE_DESCRIPTION,
-  SITE_TITLE,
-} from "@consts";
-import Pagefind from "astro-pagefind/components/Search";
+import PagefindConfig from "astro-pagefind/components/PagefindConfig.astro";
 ---
 
-<BaseLayout title={SEARCH_PAGE_TITLE} description={SEARCH_PAGE_DESCRIPTION}>
-  <main>
-    <section class="mx-auto w-full max-w-screen-2xl px-4 pb-32 md:px-6">
-      <!-- 增加了底部的填充，防止内容覆盖 footer -->
-      <div
-        class="mt-32 flex min-h-[500px] flex-col items-center justify-start pt-6"
-      >
-        <a href="/" class="mb-4 flex-none text-xl font-semibold">{SITE_TITLE}</a
-        >
-        <div
-          class="h-auto max-h-[500px] w-full max-w-[500px] overflow-y-auto md:w-[400px] lg:w-[500px]"
-        >
-          <Pagefind
-            id="search"
-            className="pagefind-ui h-full w-full"
-            uiOptions={{ showImages: false }}
-          />
-        </div>
-      </div>
-    </section>
-  </main>
+<BaseLayout title="Search" description="搜尋 BLOsGa 的所有文章">
+  <header class="search-head">
+    <h1 class="page-title">Search</h1>
+    <p class="page-lead">搜尋所有文章內容。</p>
+  </header>
+
+  <div class="search">
+    <PagefindConfig />
+    <pagefind-input placeholder="輸入關鍵字…" autofocus></pagefind-input>
+    <pagefind-summary></pagefind-summary>
+    <pagefind-results show-images="false"></pagefind-results>
+  </div>
 </BaseLayout>
+
+<style>
+  .search-head {
+    margin-bottom: 2rem;
+  }
+
+  .search {
+    --pf-font: var(--font-sans);
+    --pf-text: var(--text);
+    --pf-text-secondary: var(--text-body);
+    --pf-text-muted: var(--muted);
+    --pf-background: var(--bg);
+    --pf-border: var(--line-strong);
+    --pf-border-focus: var(--accent);
+    --pf-outline-focus: var(--accent);
+    --pf-hover: var(--accent-soft);
+    --pf-mark: var(--selection);
+    --pf-border-radius: var(--radius);
+    --pf-skeleton: var(--bg-soft);
+    --pf-input-font-size: 0.95rem;
+    --pf-result-title-font-size: 1rem;
+    --pf-result-excerpt-font-size: 0.86rem;
+    --pf-summary-font-size: 0.75rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .search :global(mark) {
+    color: var(--text);
+  }
+</style>

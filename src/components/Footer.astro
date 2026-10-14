@@ -1,116 +1,95 @@
 ---
-import Link from "@components/Links.astro";
-import { BRAND_NAME, FooterLinks, SocialLinks } from "@consts";
-const today = new Date();
+import clawdLight from "../assets/clawdLight.gif";
+import clawdDark from "../assets/clawdDark.gif";
+import { SITE_AUTHOR } from "@consts";
+
+const year = new Date().getFullYear();
+const links = [
+  { href: "https://osga.dev", label: "osga.dev" },
+  { href: "/rss.xml", label: "RSS" },
+  { href: "https://github.com/osga24/BLOsGa", label: "Source" },
+];
 ---
 
 <footer class="site-footer">
-  <div class="footer-inner">
-    <div class="footer-links">
-      {FooterLinks.map((link) => <Link href={link.href}>{link.title}</Link>)}
-    </div>
-
-    <div class="footer-social">
-      {
-        SocialLinks.map((link) => (
-          <a href={link.href} class="footer-icon" aria-label={link.label} target="_blank" rel="noopener">
-            <i class={link.icon}></i>
-          </a>
-        ))
-      }
-    </div>
-
-    <p class="footer-copy">
-      <a href="/" class="brand-mark">{BRAND_NAME}</a> &copy; {today.getFullYear()}
-    </p>
+  <div class="footer-image" aria-hidden="true">
+    <img class="footer-gif footer-gif-light" src={clawdLight.src} alt="" width="80" loading="lazy" />
+    <img class="footer-gif footer-gif-dark" src={clawdDark.src} alt="" width="80" loading="lazy" />
+  </div>
+  <hr class="footer-rule" />
+  <div class="footer-content">
+    <p class="footer-meta text-muted">© {year} {SITE_AUTHOR}</p>
+    <nav class="footer-links" aria-label="頁尾連結">
+      {links.map((link) => <a class="interactive-link" href={link.href}>{link.label}</a>)}
+    </nav>
   </div>
 </footer>
 
 <style>
   .site-footer {
-    margin-top: auto;
-    border-top: 1px solid rgba(var(--border), 0.15);
+    width: 100%;
+    margin-top: 6rem;
   }
-  .footer-inner {
-    max-width: 72rem;
-    margin: 0 auto;
-    padding: 2.5rem 1.5rem;
+
+  .footer-image {
+    position: relative;
     display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 1.25rem;
+    justify-content: flex-end;
+    padding-right: 1rem;
+    line-height: 0;
+    pointer-events: none;
   }
+
+  .footer-gif {
+    display: block;
+    width: 5rem;
+    height: auto;
+    transition: opacity var(--theme-duration) var(--ease);
+  }
+
+  .footer-gif-dark {
+    position: absolute;
+    top: -0.35rem;
+    right: 1rem;
+    opacity: 0;
+  }
+
+  :global(:root[data-theme="dark"]) .footer-gif-light {
+    opacity: 0;
+  }
+
+  :global(:root[data-theme="dark"]) .footer-gif-dark {
+    opacity: 1;
+  }
+
+  .footer-rule {
+    height: 1px;
+    margin: 0;
+    border: 0;
+    background: var(--line);
+  }
+
+  .footer-content {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding-top: 1rem;
+    font-size: 0.82rem;
+  }
+
+  .footer-meta {
+    margin: 0;
+  }
+
   .footer-links {
     display: flex;
     flex-wrap: wrap;
-    gap: 1.25rem;
-    order: 1;
-  }
-  .footer-links :global(a) {
-    color: rgb(var(--gray));
-    text-decoration: none;
-    font-size: 0.85rem;
-    font-family: var(--font-brand);
-    transition: color 0.25s ease;
-  }
-  .footer-links :global(a:hover) {
-    color: var(--accent);
-  }
-  .footer-social {
-    display: flex;
-    gap: 0.5rem;
-    order: 3;
-  }
-  .footer-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 2.25rem;
-    height: 2.25rem;
-    border-radius: 999px;
-    color: rgb(var(--gray));
-    border: 1px solid rgba(var(--border), 0.3);
-    transition: all 0.25s ease;
-  }
-  .footer-icon:hover {
-    color: var(--accent);
-    border-color: rgba(var(--accent-rgb), 0.45);
-    transform: translateY(-2px);
-  }
-  .footer-icon i {
-    width: 1.05rem;
-    height: 1.05rem;
-  }
-  .footer-copy {
-    order: 2;
-    margin: 0;
-    font-size: 0.82rem;
-    color: rgb(var(--text-muted));
-    font-family: var(--font-brand);
-  }
-  .footer-copy .brand-mark {
-    color: rgb(var(--gray));
-    text-decoration: none;
-  }
-  .footer-copy .brand-mark:hover {
-    color: var(--accent);
+    justify-content: flex-end;
+    gap: 0.85rem;
   }
 
-  @media (max-width: 640px) {
-    .footer-inner {
-      flex-direction: column;
-      text-align: center;
-    }
-    .footer-links {
-      order: 1;
-      justify-content: center;
-    }
-    .footer-social {
-      order: 2;
-    }
-    .footer-copy {
-      order: 3;
-    }
+  .footer-links a {
+    color: var(--muted);
   }
 </style>

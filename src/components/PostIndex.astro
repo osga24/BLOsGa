@@ -1,0 +1,18 @@
+---
+import PostList from "@components/PostList.astro";
+import Pagination from "@components/Pagination.astro";
+import type { Post } from "@utils/posts";
+
+type Props = {
+  posts: Post[];
+  current: number;
+  last: number;
+  prev?: string;
+  next?: string;
+};
+const { posts, current, last, prev, next } = Astro.props;
+---
+
+<p class="meta-kicker">{current === 1 ? "Latest posts" : `Page ${current}`}</p>
+<PostList posts={posts} featureFirst={current === 1} />
+<Pagination prev={prev} next={next} current={current} last={last} />
