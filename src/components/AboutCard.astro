@@ -1,0 +1,88 @@
+---
+import clawdLight from "../assets/clawdLight.gif";
+---
+
+<a class="about-card" href="https://osga.dev" target="_blank" rel="noopener">
+  <div class="about-body">
+    <p class="about-kicker">About me</p>
+    <p class="about-title">Hi, I'm<br />OsGa.</p>
+    <p class="about-text">資安、開發與社群。<br />更多經歷與作品都在個人網站。</p>
+    <p class="about-link">osga.dev →</p>
+  </div>
+  <img class="about-clawd" src={clawdLight.src} alt="" width="160" loading="lazy" />
+</a>
+
+<style>
+  .about-card {
+    position: relative;
+    display: block;
+    height: 100%;
+    min-height: 22rem;
+    overflow: hidden;
+    border-radius: var(--radius);
+    background: linear-gradient(135deg, #495954 0%, #6e8b7f 100%);
+    color: #f7f1e3;
+    transition: transform 0.5s var(--ease);
+  }
+
+  :global(:root[data-theme="dark"]) .about-card {
+    background: linear-gradient(135deg, #2a3330 0%, #495954 100%);
+  }
+
+  .about-body {
+    position: relative;
+    z-index: 1;
+    padding: 2.25rem 2rem;
+  }
+
+  .about-kicker {
+    margin: 0;
+    font-size: 0.72rem;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    opacity: 0.7;
+  }
+
+  .about-title {
+    margin: 0.6rem 0 0;
+    font-size: 2.25rem;
+    font-weight: 700;
+    line-height: 1.1;
+    letter-spacing: -0.06em;
+  }
+
+  .about-text {
+    margin: 1.1rem 0 0;
+    font-family: var(--font-body);
+    font-size: 0.9rem;
+    line-height: 1.7;
+    opacity: 0.85;
+  }
+
+  .about-link {
+    margin: 1.4rem 0 0;
+    font-size: 0.8rem;
+    letter-spacing: 0.06em;
+  }
+
+  .about-clawd {
+    position: absolute;
+    right: 1.5rem;
+    bottom: 1.25rem;
+    width: 6.5rem;
+    height: auto;
+    transform: rotate(-8deg);
+    image-rendering: pixelated;
+    transition: transform 0.7s var(--ease);
+  }
+
+  @media (hover: hover) {
+    .about-card:hover {
+      transform: scale(1.02);
+    }
+
+    .about-card:hover .about-clawd {
+      transform: rotate(0deg) scale(1.12);
+    }
+  }
+</style>

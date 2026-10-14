@@ -1,0 +1,115 @@
+---
+import SiteNav from "@components/SiteNav.astro";
+import SocialActions from "@components/SocialActions.astro";
+import { SITE_AUTHOR, SITE_INTRO } from "@consts";
+---
+
+<aside class="sidebar">
+  <div class="sidebar-top">
+    <a class="brand" href="/" aria-label="BLOsGa 首頁">
+      <span class="wordmark">{SITE_AUTHOR}</span>
+      <span class="brand-sub">Blog</span>
+    </a>
+    <p class="intro">{SITE_INTRO}</p>
+    <div class="actions-wrap">
+      <SocialActions />
+    </div>
+  </div>
+
+  <SiteNav direction="vertical" />
+
+  <div class="sidebar-extra">
+    <slot />
+  </div>
+</aside>
+
+<style>
+  .sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 2.75rem;
+  }
+
+  .brand {
+    display: inline-flex;
+    flex-direction: column;
+    line-height: 1;
+  }
+
+  .wordmark {
+    font-weight: 700;
+    font-size: 3rem;
+    letter-spacing: -0.06em;
+    color: var(--text);
+    transition: color var(--theme-duration) var(--ease);
+  }
+
+  .brand-sub {
+    margin-top: 0.45rem;
+    font-size: 0.8rem;
+    letter-spacing: 0.32em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .brand:hover .wordmark {
+    color: var(--accent);
+  }
+
+  .intro {
+    margin: 1.25rem 0 0;
+    font-size: 0.82rem;
+    line-height: 1.7;
+    color: var(--muted);
+    white-space: pre-line;
+  }
+
+  .actions-wrap {
+    margin-top: 1.25rem;
+  }
+
+  .sidebar-extra:empty {
+    display: none;
+  }
+
+  @media (max-width: 959px) {
+    .sidebar {
+      gap: 0;
+    }
+
+    .sidebar-top {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+
+    .brand {
+      flex-direction: row;
+      align-items: baseline;
+      gap: 0.6rem;
+    }
+
+    .wordmark {
+      font-size: 2rem;
+    }
+
+    .brand-sub {
+      margin-top: 0;
+      letter-spacing: 0.2em;
+      font-size: 0.7rem;
+    }
+
+    .intro {
+      display: none;
+    }
+
+    .actions-wrap {
+      margin-top: 0;
+    }
+
+    .sidebar-extra {
+      display: none;
+    }
+  }
+</style>
