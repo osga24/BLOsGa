@@ -283,7 +283,7 @@
   padding: 0.85rem 1.1rem;
   border: 1px solid var(--line);
   border-left: 3px solid var(--callout);
-  border-radius: 0.4rem;
+  border-radius: 0 0.4rem 0.4rem 0;
   background: var(--accent-soft);
   font-size: 0.94rem;
   line-height: 1.75;
