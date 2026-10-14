@@ -1,0 +1,56 @@
+---
+type Props = {
+  title: string;
+  lead: string;
+  base: string;
+  terms: [string, number][];
+  prefix?: string;
+};
+
+const { title, lead, base, terms, prefix = "" } = Astro.props;
+---
+
+<header class="term-head">
+  <h1 class="page-title">{title}</h1>
+  <p class="page-lead">{lead}</p>
+</header>
+
+<ul class="divided-list">
+  {
+    terms.map(([name, count]) => (
+      <li>
+        <a class="term-row" href={`${base}${encodeURIComponent(name)}/`}>
+          <span class="term-name">{`${prefix}${name}`}</span>
+          <span class="term-count">{String(count).padStart(2, "0")}</span>
+        </a>
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  .term-head {
+    margin-bottom: 2rem;
+  }
+
+  .term-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 0.85rem 0;
+    font-size: 0.92rem;
+  }
+
+  .term-name {
+    transition: color var(--theme-duration) var(--ease);
+  }
+
+  .term-row:hover .term-name {
+    color: var(--accent);
+  }
+
+  .term-count {
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+</style>

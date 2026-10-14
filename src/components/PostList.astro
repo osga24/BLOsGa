@@ -1,0 +1,180 @@
+---
+import { Image } from "astro:assets";
+import { render } from "astro:content";
+import { formatDate, type Post } from "@utils/posts";
+
+type Props = {
+  posts: Post[];
+  /** Render the first post as a large card with its hero image. */
+  featureFirst?: boolean;
+};
+
+const { posts, featureFirst = false } = Astro.props;
+
+const items = await Promise.all(
+  posts.map(async (post) => {
+    const { remarkPluginFrontmatter } = await render(post);
+    return { post, minutes: remarkPluginFrontmatter.minutesRead as number | undefined };
+  }),
+);
+const [first, ...rest] = items;
+const featured = featureFirst && first?.post.data.heroImage ? first : undefined;
+const list = featured ? rest : items;
+---
+
+{
+  featured && (
+    <a class="featured" href={`/posts/${featured.post.id}/`}>
+      <div class="featured-media">
+        <Image
+          src={featured.post.data.heroImage!}
+          alt=""
+          width={960}
+          loading="eager"
+          class="featured-img"
+        />
+      </div>
+      <p class="post-meta">
+        <time datetime={featured.post.data.pubDate.toISOString()}>{formatDate(featured.post.data.pubDate)}</time>
+        {featured.post.data.category && <span>· {featured.post.data.category}</span>}
+        {featured.minutes && <span>· {featured.minutes} min</span>}
+      </p>
+      <h2 class="featured-title">{featured.post.data.title}</h2>
+      {featured.post.data.description && <p class="post-desc">{featured.post.data.description}</p>}
+    </a>
+  )
+}
+
+<ul class="divided-list post-list">
+  {
+    list.map(({ post, minutes }) => (
+      <li>
+        <a class="post-row" href={`/posts/${post.id}/`}>
+          <div class="post-text">
+            <p class="post-meta">
+              <time datetime={post.data.pubDate.toISOString()}>{formatDate(post.data.pubDate)}</time>
+              {post.data.category && <span>· {post.data.category}</span>}
+              {minutes && <span>· {minutes} min</span>}
+              {post.data.draft && <span class="draft">draft</span>}
+            </p>
+            <h2 class="post-title">{post.data.title}</h2>
+            {post.data.description && <p class="post-desc">{post.data.description}</p>}
+          </div>
+          {post.data.heroImage && (
+            <div class="post-thumb">
+              <Image src={post.data.heroImage} alt="" width={320} class="post-thumb-img" />
+            </div>
+          )}
+        </a>
+      </li>
+    ))
+  }
+</ul>
+
+<style>
+  .featured {
+    display: block;
+    margin-bottom: 2.5rem;
+  }
+
+  .featured-media,
+  .post-thumb {
+    overflow: hidden;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    background: var(--bg-soft);
+  }
+
+  .featured-media {
+    aspect-ratio: 16 / 9;
+    margin-bottom: 1.1rem;
+  }
+
+  .featured-img,
+  .post-thumb-img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform 0.5s var(--ease);
+  }
+
+  .featured:hover .featured-img,
+  .post-row:hover .post-thumb-img {
+    transform: scale(1.03);
+  }
+
+  .featured-title {
+    margin: 0.35rem 0 0;
+    font-size: clamp(1.3rem, 3.4vw, 1.6rem);
+    letter-spacing: -0.04em;
+    transition: color var(--theme-duration) var(--ease);
+  }
+
+  .post-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 8.5rem;
+    gap: 1.5rem;
+    align-items: center;
+    padding: 1.4rem 0;
+  }
+
+  .post-row:not(:has(.post-thumb)) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .post-thumb {
+    aspect-ratio: 4 / 3;
+  }
+
+  .post-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    margin: 0;
+    font-size: 0.75rem;
+    color: var(--muted);
+    letter-spacing: 0.02em;
+  }
+
+  .draft {
+    color: #b0583f;
+  }
+
+  .post-title {
+    margin: 0.3rem 0 0;
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+    transition: color var(--theme-duration) var(--ease);
+  }
+
+  .featured:hover .featured-title,
+  .post-row:hover .post-title {
+    color: var(--accent);
+  }
+
+  .post-desc {
+    margin: 0.4rem 0 0;
+    font-family: var(--font-body);
+    font-size: 0.88rem;
+    line-height: 1.6;
+    color: var(--muted);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  @media (max-width: 520px) {
+    .post-row {
+      grid-template-columns: minmax(0, 1fr) 5.5rem;
+      gap: 1rem;
+      padding: 1.15rem 0;
+    }
+
+    .post-title {
+      font-size: 0.98rem;
+    }
+  }
+</style>

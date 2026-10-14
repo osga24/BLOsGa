@@ -1,0 +1,118 @@
+---
+import { Image } from "astro:assets";
+import bannerLight from "../assets/bannerLight.jpg";
+import bannerDark from "../assets/bannerDark.jpg";
+---
+
+<a class="about-card" href="https://osga.dev" target="_blank" rel="noopener">
+  <div class="card-rule">
+    <span>About</span>
+    <span>osga.dev ↗</span>
+  </div>
+  <div class="about-banner" aria-hidden="true">
+    <Image class="banner-image banner-light" src={bannerLight} alt="" width={640} />
+    <Image class="banner-image banner-dark" src={bannerDark} alt="" width={640} />
+  </div>
+  <p class="about-title">Hi, I'm OsGa.</p>
+  <p class="about-text">資安、開發與社群。<br />經歷、作品與聯絡方式都在個人網站。</p>
+  <span class="about-link">Visit osga.dev →</span>
+</a>
+
+<style>
+  .about-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 0 1.25rem 1.5rem;
+    border: 1px solid var(--line);
+    background: var(--bg-soft);
+    transition:
+      border-color 0.3s var(--ease),
+      background-color var(--theme-duration) var(--ease);
+  }
+
+  .card-rule {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.9rem 0 0.75rem;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .about-banner {
+    display: grid;
+    border: 1px solid var(--line);
+    overflow: hidden;
+  }
+
+  .about-banner :global(.banner-image) {
+    grid-area: 1 / 1;
+    display: block;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 735 / 235;
+    object-fit: cover;
+    transition:
+      opacity var(--theme-duration) var(--ease),
+      transform 0.8s var(--ease);
+  }
+
+  .about-banner :global(.banner-dark) {
+    opacity: 0;
+  }
+
+  :global(:root[data-theme="dark"]) .about-banner :global(.banner-light) {
+    opacity: 0;
+  }
+
+  :global(:root[data-theme="dark"]) .about-banner :global(.banner-dark) {
+    opacity: 1;
+  }
+
+  .about-title {
+    margin: 1.4rem 0 0;
+    font-size: 1.9rem;
+    font-weight: 700;
+    letter-spacing: -0.06em;
+    line-height: 1.1;
+  }
+
+  .about-text {
+    margin: 0.85rem 0 0;
+    font-family: var(--font-body);
+    font-size: 0.88rem;
+    line-height: 1.75;
+    color: var(--muted);
+  }
+
+  .about-link {
+    align-self: flex-start;
+    margin-top: auto;
+    padding-top: 1.5rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    transition: color 0.3s var(--ease);
+  }
+
+  @media (hover: hover) {
+    .about-card:hover .about-link {
+      color: var(--text);
+    }
+
+    .about-card:hover {
+      border-color: var(--line-strong);
+    }
+
+    .about-card:hover .about-banner :global(.banner-image) {
+      transform: scale(1.04);
+    }
+
+    .about-card:hover .card-rule span:last-child {
+      color: var(--text);
+    }
+  }
+</style>

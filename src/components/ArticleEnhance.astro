@@ -1,0 +1,112 @@
+---
+// Client-side niceties for the article body: code copy buttons,
+// alt-text captions, a minimal image lightbox and TOC scroll-spy.
+---
+
+<dialog class="lightbox" id="lightbox" aria-label="圖片檢視">
+  <img id="lightbox-img" alt="" />
+</dialog>
+
+<script>
+  const article = document.querySelector<HTMLElement>(".prose");
+
+  // Copy buttons
+  const COPY = '<svg viewBox="0 0 24 24"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>';
+  const CHECK = '<svg viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg>';
+  article?.querySelectorAll("pre").forEach((pre) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "copy-button";
+    button.setAttribute("aria-label", "複製程式碼");
+    button.innerHTML = COPY;
+    button.addEventListener("click", async () => {
+      try {
+        await navigator.clipboard.writeText(pre.querySelector("code")?.innerText ?? "");
+        button.classList.add("copied");
+        button.innerHTML = CHECK;
+        setTimeout(() => {
+          button.classList.remove("copied");
+          button.innerHTML = COPY;
+        }, 1600);
+      } catch {}
+    });
+    pre.appendChild(button);
+  });
+
+  // Captions from alt text
+  article?.querySelectorAll<HTMLImageElement>("img").forEach((img) => {
+    const alt = img.alt.trim();
+    if (!alt || img.closest("figure")) return;
+    const host = img.parentElement?.tagName === "P" && img.parentElement.childNodes.length === 1
+      ? img.parentElement
+      : img;
+    const figure = document.createElement("figure");
+    const caption = document.createElement("figcaption");
+    caption.textContent = alt;
+    host.replaceWith(figure);
+    figure.append(img, caption);
+  });
+
+  // Lightbox
+  const dialog = document.getElementById("lightbox") as HTMLDialogElement | null;
+  const dialogImg = document.getElementById("lightbox-img") as HTMLImageElement | null;
+  if (dialog && dialogImg) {
+    document.querySelectorAll<HTMLImageElement>(".prose img, .post-hero img").forEach((img) => {
+      img.addEventListener("click", () => {
+        dialogImg.src = img.currentSrc || img.src;
+        dialogImg.alt = img.alt;
+        dialog.showModal();
+      });
+    });
+    dialog.addEventListener("click", () => dialog.close());
+  }
+
+  // TOC scroll-spy
+  const links = document.querySelectorAll<HTMLAnchorElement>("[data-toc-link]");
+  if (links.length) {
+    const headings = [...links]
+      .map((l) => document.getElementById(l.dataset.tocLink!))
+      .filter((h): h is HTMLElement => !!h);
+    const setActive = () => {
+      let current = headings[0];
+      for (const h of headings) {
+        if (h.getBoundingClientRect().top < 140) current = h;
+      }
+      links.forEach((l) => l.classList.toggle("is-active", l.dataset.tocLink === current?.id));
+    };
+    window.addEventListener("scroll", setActive, { passive: true });
+    setActive();
+  }
+</script>
+
+<style>
+  .lightbox {
+    max-width: 100vw;
+    max-height: 100vh;
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    padding: 2rem;
+    border: 0;
+    background: transparent;
+    cursor: zoom-out;
+  }
+
+  .lightbox[open] {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .lightbox::backdrop {
+    background: rgba(10, 10, 10, 0.82);
+    backdrop-filter: blur(4px);
+  }
+
+  .lightbox img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: var(--radius);
+  }
+</style>

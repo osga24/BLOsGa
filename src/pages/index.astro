@@ -1,123 +1,15 @@
 ---
-import { getCollection } from "astro:content";
 import BaseLayout from "@layouts/BaseLayout.astro";
-import HeroCard from "@components/HeroCard.astro";
-import Card from "@components/CommonCard.astro";
-import Pagination from "@components/Pagination.astro";
-import { SITE_TITLE, SITE_DESCRIPTION } from "@consts";
+import HomeHeader from "@components/HomeHeader.astro";
+import PostGrid from "@components/PostGrid.astro";
+import { SITE_DESCRIPTION, SITE_TITLE } from "@consts";
+import { getPosts } from "@utils/posts";
 
-const allPosts = await getCollection("posts");
-allPosts.sort(
-  (a, b) =>
-    new Date(b.data.pubDate).valueOf() - new Date(a.data.pubDate).valueOf(),
-);
-
-const postsPerPage = 15;
-const firstPagePosts = allPosts.slice(0, postsPerPage);
-const totalPages = Math.ceil(allPosts.length / postsPerPage);
+const posts = await getPosts();
+const since = Math.min(...posts.map((p) => p.data.pubDate.getUTCFullYear()));
 ---
 
-<BaseLayout title={SITE_TITLE} description={SITE_DESCRIPTION}>
-  <section class="intro">
-    <h1 class="intro-title brand-mark">/ {SITE_TITLE} /</h1>
-    <p class="intro-desc">{SITE_DESCRIPTION}</p>
-    <div class="intro-rule"></div>
-  </section>
-
-  {firstPagePosts.length > 0 && (
-    <div class="home-feature">
-      <HeroCard post={firstPagePosts[0]} />
-    </div>
-  )}
-
-  {firstPagePosts.length > 1 && (
-    <section class="home-section">
-      <div class="section-head">
-        <span class="section-label">Latest</span>
-      </div>
-      <div class="card-grid">
-        {firstPagePosts.slice(1).map((post) => <Card post={post} />)}
-      </div>
-    </section>
-  )}
-
-  <Pagination
-    currentPage={1}
-    lastPage={totalPages}
-    urlPrev={null}
-    urlNext={totalPages > 1 ? `/page/2` : null}
-    basePath="/page/"
-    maxDisplayedPages={5}
-  />
+<BaseLayout title={SITE_TITLE} description={SITE_DESCRIPTION} wide>
+  <HomeHeader slot="header" postCount={posts.length} since={since} />
+  <PostGrid posts={posts} />
 </BaseLayout>
-
-<style>
-  .intro {
-    text-align: center;
-    margin: clamp(1.5rem, 5vw, 3.5rem) 0 clamp(2rem, 5vw, 3.5rem);
-  }
-  .intro-title {
-    font-size: clamp(1.8rem, 7vw, 3rem);
-    font-weight: 700;
-    color: rgb(var(--black));
-    margin: 0;
-    letter-spacing: -0.04em;
-  }
-  .intro-desc {
-    color: rgb(var(--text-muted));
-    font-size: clamp(0.9rem, 2.5vw, 1.05rem);
-    margin: 1rem auto 0;
-    max-width: 38rem;
-    font-family: var(--font-brand);
-  }
-  .intro-rule {
-    width: 80px;
-    height: 3px;
-    background: var(--accent);
-    margin: 1.75rem auto 0;
-  }
-
-  .home-feature {
-    margin-bottom: clamp(2rem, 5vw, 3rem);
-  }
-
-  .home-section {
-    margin-bottom: 2.5rem;
-  }
-  .section-head {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-    margin-bottom: 1.5rem;
-  }
-  .section-head::after {
-    content: "";
-    flex: 1;
-    height: 1px;
-    background: rgba(var(--border), 0.3);
-  }
-  .section-label {
-    font-size: 0.7rem;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 0.14em;
-    color: var(--accent);
-    font-family: var(--font-brand);
-  }
-
-  .card-grid {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: clamp(1rem, 2.5vw, 1.5rem);
-  }
-  @media (max-width: 900px) {
-    .card-grid {
-      grid-template-columns: repeat(2, 1fr);
-    }
-  }
-  @media (max-width: 560px) {
-    .card-grid {
-      grid-template-columns: 1fr;
-    }
-  }
-</style>

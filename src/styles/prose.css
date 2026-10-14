@@ -1,0 +1,383 @@
+/* ============================================================
+   Article body (.prose)
+   Headings / code in JetBrains Mono, paragraphs in a CJK-friendly sans.
+   ============================================================ */
+.prose {
+  font-family: var(--font-body);
+  font-size: 1rem;
+  line-height: 1.9;
+  color: var(--text-body);
+  overflow-wrap: break-word;
+}
+
+.prose > :first-child {
+  margin-top: 0;
+}
+
+.prose p {
+  margin: 1.1em 0;
+}
+
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4 {
+  font-family: var(--font-sans);
+  font-weight: 700;
+  position: relative;
+}
+
+/* Posts use `#` as their section level, so h1 is styled as a section heading */
+.prose h1 {
+  font-size: 1.4rem;
+  margin: 3.2rem 0 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.prose h2 {
+  font-size: 1.2rem;
+  margin: 2.6rem 0 0.8rem;
+}
+
+.prose h3 {
+  font-size: 1.05rem;
+  margin: 2rem 0 0.6rem;
+}
+
+.prose h4 {
+  font-size: 0.95rem;
+  margin: 1.6rem 0 0.5rem;
+}
+
+.prose h1::before,
+.prose h2::before,
+.prose h3::before {
+  color: var(--muted);
+  opacity: 0.55;
+  font-weight: 400;
+  margin-right: 0.5ch;
+}
+
+.prose h1::before {
+  content: "#";
+}
+
+.prose h2::before {
+  content: "##";
+}
+
+.prose h3::before {
+  content: "###";
+}
+
+.prose a {
+  color: var(--text);
+  text-decoration: underline;
+  text-decoration-color: var(--line-strong);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.25em;
+  transition: text-decoration-color 0.2s ease, color 0.2s ease;
+}
+
+.prose a:hover {
+  color: var(--accent);
+  text-decoration-color: currentColor;
+}
+
+.prose strong {
+  color: var(--text);
+  font-weight: 700;
+}
+
+.prose del {
+  color: var(--muted);
+}
+
+.prose ul,
+.prose ol {
+  padding-left: 1.4em;
+  margin: 1em 0;
+}
+
+.prose li {
+  margin: 0.35em 0;
+}
+
+.prose li::marker {
+  color: var(--muted);
+}
+
+.prose blockquote {
+  margin: 1.5em 0;
+  padding: 0.2em 0 0.2em 1.1em;
+  border-left: 2px solid var(--line-strong);
+  color: var(--muted);
+}
+
+.prose blockquote p {
+  margin: 0.5em 0;
+}
+
+.prose hr {
+  border: 0;
+  height: 1px;
+  background: var(--line);
+  margin: 3rem 0;
+}
+
+/* Images */
+.prose img {
+  display: block;
+  margin: 1.75rem auto;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  cursor: zoom-in;
+}
+
+.prose figure {
+  margin: 1.75rem 0;
+}
+
+.prose figure img {
+  margin: 0 auto;
+}
+
+.prose figcaption {
+  margin-top: 0.6rem;
+  text-align: center;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+/* Inline code */
+.prose :not(pre) > code {
+  font-family: var(--font-mono);
+  font-size: 0.86em;
+  padding: 0.12em 0.4em;
+  border-radius: 0.35rem;
+  background: var(--code-bg);
+  border: 1px solid var(--line);
+  color: var(--text);
+}
+
+.prose kbd {
+  font-family: var(--font-mono);
+  font-size: 0.8em;
+  padding: 0.1em 0.45em;
+  border: 1px solid var(--line-strong);
+  border-bottom-width: 2px;
+  border-radius: 0.3rem;
+}
+
+/* Code blocks (Shiki dual theme) */
+.prose pre {
+  position: relative;
+  margin: 1.6rem 0;
+  padding: 1rem 1.15rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background-color: var(--code-bg) !important;
+  font-size: 0.84rem;
+  line-height: 1.7;
+  overflow-x: auto;
+}
+
+.prose pre code {
+  font-family: var(--font-mono);
+}
+
+:root[data-theme="dark"] .prose .astro-code,
+:root[data-theme="dark"] .prose .astro-code span {
+  color: var(--shiki-dark) !important;
+  font-style: var(--shiki-dark-font-style) !important;
+  font-weight: var(--shiki-dark-font-weight) !important;
+}
+
+.prose pre[data-language]:not([data-language="plaintext"])::after {
+  content: attr(data-language);
+  position: absolute;
+  top: 0.45rem;
+  right: 0.75rem;
+  font-family: var(--font-mono);
+  font-size: 0.65rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.prose pre:hover::after {
+  opacity: 0;
+}
+
+.copy-button {
+  position: absolute;
+  top: 0.45rem;
+  right: 0.45rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.9rem;
+  height: 1.9rem;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 0.4rem;
+  background: var(--bg);
+  color: var(--muted);
+  cursor: pointer;
+  opacity: 0;
+  transition: opacity 0.2s ease, color 0.2s ease;
+}
+
+.prose pre:hover .copy-button,
+.copy-button:focus-visible {
+  opacity: 1;
+}
+
+.copy-button:hover,
+.copy-button.copied {
+  color: var(--text);
+}
+
+.copy-button svg {
+  width: 0.95rem;
+  height: 0.95rem;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* Tables */
+.prose table {
+  display: block;
+  width: max-content;
+  max-width: 100%;
+  overflow-x: auto;
+  margin: 1.6rem 0;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.prose th,
+.prose td {
+  padding: 0.55rem 0.9rem;
+  border-bottom: 1px solid var(--line);
+  text-align: left;
+}
+
+.prose th {
+  font-family: var(--font-sans);
+  font-size: 0.8rem;
+  color: var(--text);
+  border-bottom-color: var(--line-strong);
+}
+
+/* Callouts: <div class="info|note|tip|success|warning|danger"> */
+.prose :is(.info, .note, .tip, .success, .warning, .danger) {
+  --callout: var(--accent);
+  margin: 1.6rem 0;
+  padding: 0.85rem 1.1rem;
+  border: 1px solid var(--line);
+  border-left: 3px solid var(--callout);
+  background: var(--accent-soft);
+  font-size: 0.94rem;
+  line-height: 1.75;
+}
+
+.prose :is(.info, .note, .tip, .success, .warning, .danger)::before {
+  display: block;
+  margin-bottom: 0.3rem;
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--callout);
+}
+
+.prose :is(.info, .note, .tip, .success, .warning, .danger) > :first-child {
+  margin-top: 0;
+}
+
+.prose :is(.info, .note, .tip, .success, .warning, .danger) > :last-child {
+  margin-bottom: 0;
+}
+
+.prose .info {
+  --callout: #4a7a91;
+}
+.prose .info::before {
+  content: "Info";
+}
+.prose .note {
+  --callout: #7a6a93;
+}
+.prose .note::before {
+  content: "Note";
+}
+.prose .tip {
+  --callout: #495954;
+}
+.prose .tip::before {
+  content: "Tip";
+}
+.prose .success {
+  --callout: #4f8058;
+}
+.prose .success::before {
+  content: "Success";
+}
+.prose .warning {
+  --callout: #a7813a;
+}
+.prose .warning::before {
+  content: "Warning";
+}
+.prose .danger {
+  --callout: #a65a4f;
+}
+.prose .danger::before {
+  content: "Danger";
+}
+
+:root[data-theme="dark"] .prose .info {
+  --callout: #7fb2c9;
+}
+:root[data-theme="dark"] .prose .note {
+  --callout: #ab9cc6;
+}
+:root[data-theme="dark"] .prose .tip {
+  --callout: #a9c2b8;
+}
+:root[data-theme="dark"] .prose .success {
+  --callout: #86bb8f;
+}
+:root[data-theme="dark"] .prose .warning {
+  --callout: #d6b06a;
+}
+:root[data-theme="dark"] .prose .danger {
+  --callout: #d98f84;
+}
+
+@media (max-width: 520px) {
+  .prose {
+    font-size: 0.97rem;
+    line-height: 1.85;
+  }
+
+  .prose pre {
+    margin-left: -1rem;
+    margin-right: -1rem;
+    border-radius: 0;
+    border-left: 0;
+    border-right: 0;
+  }
+
+  .copy-button {
+    opacity: 1;
+  }
+}

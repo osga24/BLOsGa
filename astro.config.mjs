@@ -1,18 +1,13 @@
 // @ts-check
 import { defineConfig } from "astro/config";
-import mdx from "@astrojs/mdx";
-
 import sitemap from "@astrojs/sitemap";
-import { remarkModifiedTime } from "./src/utils/remark-modified-time.mjs";
-import partytown from "@astrojs/partytown";
+import icon from "astro-icon";
 import pagefind from "astro-pagefind";
-import tailwindcss from "@tailwindcss/vite";
+import { unified } from "@astrojs/markdown-remark";
+import { remarkReadingTime } from "./src/utils/remark-reading-time.mjs";
 
 // https://astro.build/config
 export default defineConfig({
-  vite: {
-    plugins: [tailwindcss()],
-  },
   site: "https://blog.osga.dev",
   trailingSlash: "always",
 
@@ -21,30 +16,13 @@ export default defineConfig({
     defaultStrategy: "viewport",
   },
 
-  experimental: {},
-
-  image: {
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "images.unsplash.com",
-      },
-    ],
-  },
-
   markdown: {
-    remarkPlugins: [remarkModifiedTime],
+    processor: unified({ remarkPlugins: [remarkReadingTime] }),
+    shikiConfig: {
+      themes: { light: "github-light", dark: "github-dark" },
+      wrap: false,
+    },
   },
-  integrations: [
-    mdx(),
-    sitemap(),
-    pagefind(),
 
-    partytown({
-      config: {
-        forward: ["dataLayer.push"],
-        debug: false,
-      },
-    }),
-  ],
+  integrations: [sitemap(), icon(), pagefind()],
 });
