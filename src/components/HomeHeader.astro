@@ -1,0 +1,136 @@
+---
+import SiteNav from "@components/SiteNav.astro";
+import SocialActions from "@components/SocialActions.astro";
+import { SITE_AUTHOR, SITE_INTRO } from "@consts";
+
+type Props = { postCount: number; since: number };
+const { postCount, since } = Astro.props;
+---
+
+<header class="home-header">
+  <div class="brand-block">
+    <a class="wordmark reveal" href="/" aria-label="BLOsGa 首頁">
+      {SITE_AUTHOR}<span class="wordmark-path">/blog</span>
+    </a>
+    <p class="tagline reveal">{SITE_INTRO}</p>
+    <div class="actions-wrap reveal">
+      <SocialActions />
+    </div>
+  </div>
+
+  <!-- No .reveal on this wrapper: a transform here would break the nav's position:fixed on mobile -->
+  <div class="side-block">
+    <p class="stats text-muted reveal">{postCount} posts · since {since}</p>
+    <SiteNav direction="horizontal" />
+  </div>
+</header>
+
+<style>
+  .home-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 2rem;
+    padding-bottom: 1.75rem;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .wordmark {
+    display: inline-block;
+    font-weight: 700;
+    font-size: clamp(2.4rem, 7vw, 4.25rem);
+    line-height: 1;
+    letter-spacing: -0.06em;
+    color: var(--text);
+    white-space: nowrap;
+  }
+
+  .wordmark-path {
+    color: var(--muted);
+    font-weight: 400;
+    opacity: 0.6;
+    transition: opacity 0.3s var(--ease);
+  }
+
+  .wordmark:hover .wordmark-path {
+    opacity: 1;
+  }
+
+  .tagline {
+    margin: 0.85rem 0 0;
+    font-size: 0.95rem;
+    color: var(--muted);
+    white-space: pre-line;
+  }
+
+  .actions-wrap {
+    margin-top: 1.25rem;
+  }
+
+  .side-block {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 1.1rem;
+  }
+
+  .stats {
+    margin: 0;
+    font-size: 0.72rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+
+  /* Soft blur-in on load, echoing osga.dev's reveal */
+  .reveal {
+    animation: reveal 0.7s var(--ease) both;
+  }
+
+  .tagline.reveal {
+    animation-delay: 0.08s;
+  }
+
+  .actions-wrap.reveal {
+    animation-delay: 0.16s;
+  }
+
+  .stats.reveal {
+    animation-delay: 0.24s;
+  }
+
+  @keyframes reveal {
+    from {
+      opacity: 0;
+      transform: translateY(0.5rem);
+      filter: blur(4px);
+    }
+  }
+
+  @media (max-width: 959px) {
+    .home-header {
+      flex-direction: column;
+      align-items: stretch;
+      gap: 0;
+    }
+
+    .brand-block {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+    }
+
+    .tagline {
+      grid-column: 1 / -1;
+      grid-row: 2;
+    }
+
+    .actions-wrap {
+      margin-top: 0;
+    }
+
+    .side-block {
+      align-items: flex-start;
+      margin-top: 1rem;
+    }
+  }
+</style>

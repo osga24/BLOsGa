@@ -1,0 +1,39 @@
+---
+import type { GetStaticPaths } from "astro";
+import BaseLayout from "@layouts/BaseLayout.astro";
+import PostList from "@components/PostList.astro";
+import { getPosts, type Post } from "@utils/posts";
+
+export const getStaticPaths = (async () => {
+  const posts = await getPosts();
+  const categories = [...new Set(posts.flatMap((p) => (p.data.category ? [p.data.category] : [])))];
+  return categories.map((category) => ({
+    params: { category },
+    props: { category, posts: posts.filter((p) => p.data.category === category) },
+  }));
+}) satisfies GetStaticPaths;
+
+type Props = { category: string; posts: Post[] };
+const { category, posts } = Astro.props;
+---
+
+<BaseLayout title={category} description={`${category} 分類下的所有文章`}>
+  <header class="term-head">
+    <a class="meta-kicker back" href="/category/">← Category</a>
+    <h1 class="page-title">{category}</h1>
+    <p class="page-lead">{posts.length} 篇文章</p>
+  </header>
+  <PostList posts={posts} />
+</BaseLayout>
+
+<style>
+  .term-head {
+    margin-bottom: 2rem;
+  }
+  .back {
+    display: inline-block;
+  }
+  .back:hover {
+    color: var(--text);
+  }
+</style>

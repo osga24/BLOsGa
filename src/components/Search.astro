@@ -1,0 +1,609 @@
+---
+import { countBy, formatDate, getPosts } from "@utils/posts";
+
+type Props = {
+  /** "page" syncs the query to ?q= ; "dialog" lives inside SearchDialog. */
+  mode?: "page" | "dialog";
+};
+
+const { mode = "page" } = Astro.props;
+const posts = await getPosts();
+const recent = posts.slice(0, 5);
+const categories = countBy(posts.flatMap((p) => (p.data.category ? [p.data.category] : [])));
+const tags = countBy(posts.flatMap((p) => p.data.tags)).slice(0, 12);
+---
+
+<div class:list={["search", `is-${mode}`]} data-search data-mode={mode}>
+  <div class="search-field">
+    <svg class="search-icon" viewBox="0 0 24 24" aria-hidden="true">
+      <circle cx="11" cy="11" r="7"></circle><path d="m20 20-3.5-3.5"></path>
+    </svg>
+    <input
+      class="search-input"
+      type="search"
+      placeholder="搜尋文章、標題或內容…"
+      autocomplete="off"
+      spellcheck="false"
+      aria-label="搜尋"
+      data-search-input
+    />
+    <kbd class="search-kbd" data-search-kbd>{mode === "dialog" ? "Esc" : "⌘K"}</kbd>
+  </div>
+
+  <div class="search-filters" role="group" aria-label="依分類篩選">
+    <button type="button" class="chip is-active" data-category="">All</button>
+    {
+      categories.map(([name, count]) => (
+        <button type="button" class="chip" data-category={name}>
+          {name}
+          <span class="chip-count">{count}</span>
+        </button>
+      ))
+    }
+  </div>
+
+  <p class="search-status" aria-live="polite" data-search-status></p>
+
+  <ol class="results" data-search-results hidden></ol>
+
+  <div class="search-empty" data-search-empty>
+    <section>
+      <p class="meta-kicker">Recent</p>
+      <ul class="divided-list">
+        {
+          recent.map((post) => (
+            <li>
+              <a class="recent-link" href={`/posts/${post.id}/`}>
+                <span class="recent-title">{post.data.title}</span>
+                <time class="text-muted">{formatDate(post.data.pubDate)}</time>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+    </section>
+    <section>
+      <p class="meta-kicker">Tags</p>
+      <div class="tag-cloud">
+        {tags.map(([tag]) => <a class="tag-chip" href={`/tags/${encodeURIComponent(tag)}/`}>#{tag}</a>)}
+      </div>
+    </section>
+  </div>
+
+  <p class="search-hint" aria-hidden="true">
+    <span><kbd>↑</kbd><kbd>↓</kbd> 選擇</span>
+    <span><kbd>↵</kbd> 開啟</span>
+    <span><kbd>/</kbd> 或 <kbd>⌘K</kbd> 隨處搜尋</span>
+  </p>
+</div>
+
+<script>
+  type PagefindResult = {
+    url: string;
+    excerpt: string;
+    content: string;
+    meta: Record<string, string>;
+    sub_results: {
+      title: string;
+      url: string;
+      excerpt: string;
+      plain_excerpt?: string;
+      anchor?: { element: string };
+    }[];
+  };
+  type Pagefind = {
+    init: () => Promise<void>;
+    options: (o: Record<string, unknown>) => Promise<void>;
+    debouncedSearch: (
+      q: string | null,
+      o?: { filters?: Record<string, string> },
+      ms?: number,
+    ) => Promise<{ results: { data: () => Promise<PagefindResult> }[] } | null>;
+  };
+
+  let pagefindPromise: Promise<Pagefind> | undefined;
+  const loadPagefind = () => {
+    if (!pagefindPromise) {
+      const path = "/pagefind/pagefind.js";
+      pagefindPromise = import(/* @vite-ignore */ path).then(async (pf: Pagefind) => {
+        await pf.options({ excerptLength: 36 });
+        await pf.init();
+        return pf;
+      });
+    }
+    return pagefindPromise;
+  };
+
+  const escapeHtml = (s: string) =>
+    s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
+
+  const CJK = /[\u3400-\u9fff\uf900-\ufaff]/;
+  const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+
+  /** Wrap every query term in <mark>, on already-escaped text. */
+  const highlight = (text: string, terms: string[]) => {
+    const html = escapeHtml(text);
+    if (!terms.length) return html;
+    const re = new RegExp(`(${terms.map((t) => escapeRegExp(escapeHtml(t))).join("|")})`, "gi");
+    return html.replace(re, "<mark>$1</mark>");
+  };
+
+  /**
+   * Pagefind splits Chinese into single characters, so "高鐵" also matches 高職 / 高雄.
+   * For CJK terms, keep only results that contain the whole term, and rebuild the
+   * excerpt around the real phrase so the highlight is meaningful.
+   */
+  const refine = (data: PagefindResult[], query: string) => {
+    const terms = query.split(/\s+/).filter(Boolean);
+    const cjkTerms = terms.filter((t) => CJK.test(t));
+    if (!cjkTerms.length) return data;
+
+    const contains = (text: string | undefined) =>
+      !!text && cjkTerms.every((t) => text.toLowerCase().includes(t.toLowerCase()));
+
+    return data
+      .filter((r) => contains(r.content) || contains(r.meta.title))
+      .map((r) => {
+        const at = r.content.toLowerCase().indexOf(cjkTerms[0].toLowerCase());
+        const start = Math.max(0, at - 30);
+        const snippet = at < 0 ? r.content.slice(0, 80) : r.content.slice(start, at + cjkTerms[0].length + 50);
+        return {
+          ...r,
+          excerpt: (start > 0 ? "…" : "") + highlight(snippet, terms) + "…",
+          sub_results: r.sub_results
+            .filter((sub) => contains(sub.plain_excerpt))
+            .map((sub) => ({ ...sub, excerpt: highlight(sub.plain_excerpt ?? "", terms) })),
+        };
+      });
+  };
+
+  const renderResult = (r: PagefindResult) => {
+    const meta = [r.meta.date, r.meta.category].filter(Boolean).map(escapeHtml).join(" · ");
+    const sections = r.sub_results
+      .filter((s) => s.anchor && s.url !== r.url)
+      .slice(0, 2)
+      .map(
+        (s) =>
+          `<li><a class="result-section" href="${escapeHtml(s.url)}"><span class="section-title"># ${escapeHtml(s.title)}</span><span class="section-excerpt">${s.excerpt}</span></a></li>`,
+      )
+      .join("");
+    const thumb = r.meta.image
+      ? `<img class="result-thumb" src="${escapeHtml(r.meta.image)}" alt="" loading="lazy" />`
+      : "";
+    return `<li class="result">
+      <a class="result-main" href="${escapeHtml(r.url)}">
+        <div class="result-text">
+          ${meta ? `<p class="result-meta">${meta}</p>` : ""}
+          <h3 class="result-title">${escapeHtml(r.meta.title ?? r.url)}</h3>
+          <p class="result-excerpt">${r.excerpt}</p>
+        </div>
+        ${thumb}
+      </a>
+      ${sections ? `<ul class="result-sections">${sections}</ul>` : ""}
+    </li>`;
+  };
+
+  function setupSearch(root: HTMLElement) {
+    const mode = root.dataset.mode;
+    const input = root.querySelector<HTMLInputElement>("[data-search-input]")!;
+    const status = root.querySelector<HTMLElement>("[data-search-status]")!;
+    const list = root.querySelector<HTMLOListElement>("[data-search-results]")!;
+    const empty = root.querySelector<HTMLElement>("[data-search-empty]")!;
+    const chips = [...root.querySelectorAll<HTMLButtonElement>("[data-category]")];
+    let category = "";
+    let token = 0;
+
+    const run = async () => {
+      const query = input.value.trim();
+      const current = ++token;
+
+      if (mode === "page") {
+        const params = new URLSearchParams();
+        if (query) params.set("q", query);
+        if (category) params.set("category", category);
+        const qs = params.toString();
+        history.replaceState(null, "", qs ? `?${qs}` : location.pathname);
+      }
+
+      if (!query && !category) {
+        list.hidden = true;
+        list.innerHTML = "";
+        empty.hidden = false;
+        status.textContent = "";
+        return;
+      }
+
+      status.textContent = "搜尋中…";
+      const pf = await loadPagefind();
+      const search = await pf.debouncedSearch(
+        query || null,
+        { filters: category ? { category } : {} },
+        180,
+      );
+      if (search === null || current !== token) return; // superseded by a newer keystroke
+
+      const raw = await Promise.all(search.results.slice(0, 30).map((r) => r.data()));
+      if (current !== token) return;
+      const data = refine(raw, query);
+      data.sort((a, b) => (query ? 0 : (b.meta.date ?? "").localeCompare(a.meta.date ?? "")));
+
+      empty.hidden = true;
+      list.hidden = data.length === 0;
+      list.innerHTML = data.map(renderResult).join("");
+
+      const scope = category ? `「${category}」分類中` : "";
+      status.textContent = data.length
+        ? `${scope}${query ? `「${query}」` : ""}找到 ${data.length} 篇文章`
+        : `${scope}沒有找到「${query}」相關的文章，換個關鍵字試試？`;
+    };
+
+    input.addEventListener("input", run);
+    input.addEventListener("focus", () => void loadPagefind(), { once: true });
+
+    chips.forEach((chip) =>
+      chip.addEventListener("click", () => {
+        category = chip.dataset.category ?? "";
+        chips.forEach((c) => c.classList.toggle("is-active", c === chip));
+        run();
+      }),
+    );
+
+    // Arrow keys move between the input and result links
+    root.addEventListener("keydown", (e) => {
+      if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
+      const links = [...root.querySelectorAll<HTMLAnchorElement>(
+        list.hidden ? ".recent-link" : ".result-main, .result-section",
+      )];
+      if (!links.length) return;
+      const i = links.indexOf(document.activeElement as HTMLAnchorElement);
+      e.preventDefault();
+      if (e.key === "ArrowDown") (links[i + 1] ?? links[0]).focus();
+      else if (i <= 0) input.focus();
+      else links[i - 1].focus();
+    });
+
+    if (mode === "page") {
+      const params = new URLSearchParams(location.search);
+      input.value = params.get("q") ?? "";
+      const initial = chips.find((c) => c.dataset.category === (params.get("category") ?? ""));
+      if (initial) {
+        category = initial.dataset.category ?? "";
+        chips.forEach((c) => c.classList.toggle("is-active", c === initial));
+      }
+      if (input.value || category) run();
+      input.focus();
+    }
+
+    root.addEventListener("search:reset", () => {
+      input.value = "";
+      category = "";
+      chips.forEach((c, i) => c.classList.toggle("is-active", i === 0));
+      run();
+    });
+  }
+
+  document.querySelectorAll<HTMLElement>("[data-search]").forEach(setupSearch);
+
+  // Pre-load the index on hover/focus of any search entry point
+  document.querySelectorAll('a[href="/search/"]').forEach((a) => {
+    a.addEventListener("pointerenter", () => void loadPagefind(), { once: true });
+  });
+</script>
+
+<style>
+  .search {
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+  }
+
+  .search-field {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .search-icon {
+    position: absolute;
+    left: 1rem;
+    width: 1.1rem;
+    height: 1.1rem;
+    fill: none;
+    stroke: var(--muted);
+    stroke-width: 2;
+    stroke-linecap: round;
+    pointer-events: none;
+  }
+
+  .search-input {
+    width: 100%;
+    height: 3.25rem;
+    padding: 0 4rem 0 2.85rem;
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
+    background: var(--bg);
+    color: var(--text);
+    font: inherit;
+    font-size: 1rem;
+    transition:
+      border-color 0.2s ease,
+      box-shadow 0.2s ease,
+      background-color var(--theme-duration) var(--ease);
+  }
+
+  .search-input::placeholder {
+    color: var(--muted);
+    opacity: 0.8;
+  }
+
+  .search-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+
+  .search-input::-webkit-search-cancel-button {
+    -webkit-appearance: none;
+  }
+
+  .search-kbd {
+    position: absolute;
+    right: 0.85rem;
+  }
+
+  kbd,
+  .search-kbd {
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    padding: 0.1rem 0.4rem;
+    border: 1px solid var(--line-strong);
+    border-bottom-width: 2px;
+    border-radius: 0.3rem;
+    color: var(--muted);
+  }
+
+  .search-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+  }
+
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.25rem 0.75rem;
+    border: 1px solid var(--line);
+    background: transparent;
+    color: var(--muted);
+    font: inherit;
+    font-size: 0.75rem;
+    cursor: pointer;
+    transition:
+      color 0.2s ease,
+      border-color 0.2s ease,
+      background-color 0.2s ease;
+  }
+
+  .chip:hover {
+    color: var(--text);
+    border-color: var(--line-strong);
+  }
+
+  .chip.is-active {
+    color: var(--bg);
+    background: var(--text);
+    border-color: var(--text);
+  }
+
+  .chip-count {
+    font-size: 0.65rem;
+    opacity: 0.6;
+  }
+
+  .search-status {
+    margin: 0;
+    min-height: 1.2em;
+    font-size: 0.78rem;
+    color: var(--muted);
+  }
+
+  .search-status:empty {
+    display: none;
+  }
+
+  /* Results (rendered from JS, hence :global) */
+  .results {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--line);
+  }
+
+  .results :global(.result) {
+    border-bottom: 1px solid var(--line);
+    padding: 0.35rem 0 0.9rem;
+  }
+
+  .results :global(.result-main) {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 7rem;
+    gap: 1.25rem;
+    align-items: start;
+    padding: 0.85rem 0.75rem 0.25rem;
+    margin: 0 -0.75rem;
+    border-radius: var(--radius);
+  }
+
+  .results :global(.result-main:not(:has(.result-thumb))) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .results :global(.result-meta) {
+    margin: 0;
+    font-size: 0.72rem;
+    font-weight: 700;
+    color: var(--accent);
+    opacity: 0.8;
+  }
+
+  .results :global(.result-title) {
+    margin: 0.25rem 0 0;
+    font-size: 1rem;
+    letter-spacing: -0.03em;
+  }
+
+  .results :global(.result-excerpt),
+  .results :global(.section-excerpt) {
+    margin: 0.35rem 0 0;
+    font-family: var(--font-body);
+    font-size: 0.85rem;
+    line-height: 1.65;
+    color: var(--muted);
+  }
+
+  .results :global(mark) {
+    background: var(--selection);
+    color: var(--text);
+    padding: 0 0.1em;
+    border-radius: 0.2em;
+  }
+
+  .results :global(.result-thumb) {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: cover;
+    border-radius: 0;
+    border: 1px solid var(--line);
+  }
+
+  .results :global(.result-sections) {
+    list-style: none;
+    margin: 0.35rem 0 0;
+    padding: 0 0 0 0.75rem;
+    border-left: 1px solid var(--line);
+  }
+
+  .results :global(.result-section) {
+    display: block;
+    padding: 0.35rem 0.6rem;
+    border-radius: 0;
+  }
+
+  .results :global(.section-title) {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .results :global(.section-excerpt) {
+    display: -webkit-box;
+    margin-top: 0.15rem;
+    font-size: 0.8rem;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .results :global(.result-main:hover),
+  .results :global(.result-main:focus-visible),
+  .results :global(.result-section:hover),
+  .results :global(.result-section:focus-visible) {
+    background: var(--accent-soft);
+    outline: none;
+  }
+
+  .results :global(.result-main:hover .result-title),
+  .results :global(.result-main:focus-visible .result-title) {
+    color: var(--accent);
+  }
+
+  /* Empty state */
+  .search-empty {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr);
+    gap: 2.5rem;
+    margin-top: 0.75rem;
+  }
+
+  .search-empty[hidden] {
+    display: none;
+  }
+
+  .recent-link {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    padding: 0.7rem 0.5rem;
+    margin: 0 -0.5rem;
+    border-radius: 0;
+    font-size: 0.86rem;
+  }
+
+  .recent-link time {
+    flex-shrink: 0;
+    font-size: 0.72rem;
+  }
+
+  .recent-link:hover,
+  .recent-link:focus-visible {
+    background: var(--accent-soft);
+    outline: none;
+  }
+
+  .tag-cloud {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+  }
+
+  .search-hint {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.25rem;
+    margin: 0.5rem 0 0;
+    font-size: 0.7rem;
+    color: var(--muted);
+  }
+
+  .search-hint span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+  }
+
+  /* Dialog variant: compact, results scroll inside */
+  .is-dialog .search-empty {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1.5rem;
+  }
+
+  .is-dialog .search-empty section:last-child {
+    display: none;
+  }
+
+  @media (max-width: 719px) {
+    .search-empty {
+      grid-template-columns: minmax(0, 1fr);
+    }
+
+    .results :global(.result-main) {
+      grid-template-columns: minmax(0, 1fr) 4.5rem;
+      gap: 0.9rem;
+    }
+
+    .search-hint {
+      display: none;
+    }
+
+    .search-kbd {
+      display: none;
+    }
+
+    .search-input {
+      padding-right: 1rem;
+    }
+  }
+</style>

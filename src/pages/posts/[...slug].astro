@@ -1,154 +1,288 @@
 ---
-import { getCollection, render } from "astro:content";
+import type { GetStaticPaths } from "astro";
 import { Image } from "astro:assets";
+import { render } from "astro:content";
+import { Icon } from "astro-icon/components";
 import BaseLayout from "@layouts/BaseLayout.astro";
-import RelatedPostsCard from "@components/RelatedPostsCard.astro";
-import FormattedDate from "@components/FormattedDate.astro";
-import Lightbox from "@components/Lightbox.astro";
-import Alert from "@components/Alert.astro";
-import BlogUtils from "@components/BlogUtils.astro";
-import "../../styles/article.css";
+import TableOfContents from "@components/TableOfContents.astro";
+import ArticleEnhance from "@components/ArticleEnhance.astro";
+import { formatDate, getPosts, type Post } from "@utils/posts";
+import "@styles/prose.css";
 
-export async function getStaticPaths() {
-  const posts = await getCollection("posts");
-  return posts.map((post) => ({
+export const getStaticPaths = (async () => {
+  const posts = await getPosts();
+  return posts.map((post, i) => ({
     params: { slug: post.id },
-    props: post,
+    props: {
+      post,
+      newer: posts[i - 1],
+      older: posts[i + 1],
+      related: posts
+        .filter((p) => p.id !== post.id && p.data.category && p.data.category === post.data.category)
+        .slice(0, 3),
+    },
   }));
-}
+}) satisfies GetStaticPaths;
 
-const post = Astro.props;
-const { Content } = await render(post);
+type Props = { post: Post; newer?: Post; older?: Post; related: Post[] };
 
-const category = post.data.category ?? "";
-const tags = post.data.tags ?? [];
-const updated = post.data.updatedDate;
+const { post, newer, older, related } = Astro.props;
+const { Content, headings, remarkPluginFrontmatter } = await render(post);
+const { title, description, pubDate, updatedDate, heroImage, tags, category } = post.data;
+const hasToc = headings.filter((h) => h.depth <= 3).length > 1;
+const minutes = remarkPluginFrontmatter.minutesRead as number | undefined;
 ---
 
-<BaseLayout
-  title={post.data.title}
-  description={post.data.description}
-  image={post.data.heroImage?.src}
-  fullWidth
->
-  <div class="blog-main">
-    <div class="blog-container">
-      <article class="blog-article">
-        <nav class="breadcrumb">
-          <a href="/">home</a>
-          {
-            category && (
-              <>
-                <span>/</span>
-                <a href={`/category/${category}/1/`}>{category}</a>
-              </>
-            )
-          }
-          <span>/</span>
-          <span>{post.data.title}</span>
-        </nav>
+<BaseLayout title={title} description={description || title} image={heroImage?.src} type="article">
+  <TableOfContents slot="sidebar" headings={headings} />
 
-        <header class="article-hero">
-          <div class="hero-content">
-            {category && <span class="article-category">{category}</span>}
-            <h1 class="article-title">{post.data.title}</h1>
-            <div class="article-meta-line">
-              <time class="publish-date">
-                <FormattedDate date={post.data.pubDate} />
-              </time>
-              {
-                updated && (
-                  <time class="update-date">
-                    最後更新 <FormattedDate date={updated} />
-                  </time>
-                )
-              }
-              {
-                tags.length > 0 && (
-                  <div class="hero-tags">
-                    {tags.slice(0, 3).map((tag) => (
-                      <span class="tag">#{tag}</span>
-                    ))}
-                    {tags.length > 3 && (
-                      <span class="tag more">+{tags.length - 3}</span>
-                    )}
-                  </div>
-                )
-              }
-            </div>
-          </div>
-
-          {
-            post.data.heroImage && (
-              <div class="hero-image">
-                <Image
-                  class="hero-img"
-                  src={post.data.heroImage}
-                  alt={post.data.title}
-                  width={1200}
-                  loading="eager"
-                />
-              </div>
-            )
-          }
-        </header>
-
-        <aside class="blog-sidebar">
-          <div class="sidebar-section">
-            <h3 class="sidebar-title">目錄</h3>
-            <nav class="table-of-contents" id="toc"></nav>
-          </div>
-        </aside>
-
-        {
-          post.data.description && (
-            <div class="tldr-section">
-              <h3 class="tldr-title">TL;DR</h3>
-              <p class="tldr-content">{post.data.description}</p>
-            </div>
-          )
-        }
-
-        <div class="article-content">
-          <Content />
-        </div>
-
-        {
-          tags.length > 0 && (
-            <footer class="article-footer">
-              <div class="article-tags">
-                <span class="tags-label">tags</span>
-                {tags.map((tag) => (
-                  <a class="tag" href={`/tags/${tag}/1/`}>
-                    #{tag}
-                  </a>
-                ))}
-              </div>
-            </footer>
-          )
-        }
-      </article>
-
+  <article class="post" data-pagefind-body>
+    <span hidden data-pagefind-meta={`date:${formatDate(pubDate)}`}></span>
+    {category && <span hidden data-pagefind-meta={`category:${category}`} data-pagefind-filter={`category:${category}`}></span>}
+    <header class="post-header">
+      <p class="post-meta" data-pagefind-ignore>
+        <time datetime={pubDate.toISOString()}>{formatDate(pubDate)}</time>
+        {category && <a href={`/category/${encodeURIComponent(category)}/`}>· {category}</a>}
+        {minutes && <span>· {minutes} min read</span>}
+      </p>
+      <h1 class="post-title" data-pagefind-meta="title">{title}</h1>
+      {description && <p class="post-lead">{description}</p>}
       {
-        category && (
-          <div class="related-block">
-            <RelatedPostsCard
-              currentCategory={category}
-              currentSlug={post.id}
-            />
+        updatedDate && (
+          <p class="post-updated" data-pagefind-ignore>
+            Updated {formatDate(updatedDate)}
+          </p>
+        )
+      }
+    </header>
+
+    {
+      heroImage && (
+        <div class="post-hero">
+          <Image src={heroImage} alt={title} width={1200} loading="eager" data-pagefind-meta="image[src]" />
+        </div>
+      )
+    }
+
+    {
+      hasToc && (
+        <details class="toc-mobile" data-pagefind-ignore>
+          <summary>目錄</summary>
+          <TableOfContents headings={headings} />
+        </details>
+      )
+    }
+
+    <div class="prose">
+      <Content />
+    </div>
+
+    <footer class="post-footer" data-pagefind-ignore>
+      {
+        tags.length > 0 && (
+          <div class="post-tags">
+            {tags.map((tag) => (
+              <a class="tag-chip" href={`/tags/${encodeURIComponent(tag)}/`}>#{tag}</a>
+            ))}
           </div>
         )
       }
-    </div>
-  </div>
 
-  <Lightbox />
-  <Alert />
-  <BlogUtils />
+      <nav class="post-nav" aria-label="上下篇">
+        {
+          newer ? (
+            <a class="post-nav-link" href={`/posts/${newer.id}/`}>
+              <span class="meta-kicker"><Icon name="lucide:arrow-left" /> Newer</span>
+              <span class="post-nav-title">{newer.data.title}</span>
+            </a>
+          ) : <span />
+        }
+        {
+          older ? (
+            <a class="post-nav-link is-older" href={`/posts/${older.id}/`}>
+              <span class="meta-kicker">Older <Icon name="lucide:arrow-right" /></span>
+              <span class="post-nav-title">{older.data.title}</span>
+            </a>
+          ) : <span />
+        }
+      </nav>
+
+      {
+        related.length > 0 && (
+          <section class="related">
+            <p class="meta-kicker">More in {category}</p>
+            <ul class="divided-list">
+              {related.map((p) => (
+                <li>
+                  <a class="related-link" href={`/posts/${p.id}/`}>
+                    <span class="related-title">{p.data.title}</span>
+                    <time class="text-muted">{formatDate(p.data.pubDate)}</time>
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </section>
+        )
+      }
+    </footer>
+  </article>
+
+  <ArticleEnhance />
 </BaseLayout>
 
 <style>
-  .related-block {
+  .post-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    margin: 0;
+    font-size: 0.75rem;
+    color: var(--muted);
+  }
+
+  .post-meta a:hover {
+    color: var(--text);
+  }
+
+  .post-title {
+    margin: 0.6rem 0 0;
+    font-size: clamp(1.65rem, 4.6vw, 2.25rem);
+    font-weight: 700;
+    letter-spacing: -0.05em;
+    line-height: 1.25;
+  }
+
+  .post-lead {
+    margin: 0.9rem 0 0;
+    font-family: var(--font-body);
+    font-size: 1rem;
+    color: var(--muted);
+  }
+
+  .post-updated {
+    margin: 0.6rem 0 0;
+    font-size: 0.72rem;
+    color: var(--muted);
+  }
+
+  .post-hero {
+    margin: 2rem 0 0;
+    overflow: hidden;
+    border-radius: var(--radius);
+    border: 1px solid var(--line);
+    background: var(--bg-soft);
+  }
+
+  .post-hero :global(img) {
+    display: block;
+    width: 100%;
+    height: auto;
+    cursor: zoom-in;
+  }
+
+  .toc-mobile {
+    display: none;
+  }
+
+  .prose {
+    margin-top: 2.5rem;
+  }
+
+  .post-footer {
     margin-top: 3.5rem;
+  }
+
+  .post-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .post-nav {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-top: 2rem;
+  }
+
+  .post-nav-link {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+  }
+
+  .post-nav-link .meta-kicker {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    margin: 0;
+  }
+
+  .post-nav-link.is-older {
+    text-align: right;
+    align-items: flex-end;
+  }
+
+  .post-nav-title {
+    font-size: 0.88rem;
+    font-weight: 700;
+    letter-spacing: -0.02em;
+    transition: color var(--theme-duration) var(--ease);
+  }
+
+  .post-nav-link:hover .post-nav-title,
+  .related-link:hover .related-title {
+    color: var(--accent);
+  }
+
+  .related {
+    margin-top: 3.5rem;
+  }
+
+  .related-link {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 1rem;
+    padding: 0.85rem 0;
+    font-size: 0.86rem;
+  }
+
+  .related-link time {
+    flex-shrink: 0;
+    font-size: 0.75rem;
+  }
+
+  @media (max-width: 959px) {
+    .toc-mobile {
+      display: block;
+      margin-top: 2rem;
+      padding: 0.8rem 1rem;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+    }
+
+    .toc-mobile summary {
+      cursor: pointer;
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      color: var(--muted);
+    }
+
+    .toc-mobile[open] summary {
+      margin-bottom: 0.9rem;
+    }
+
+    .toc-mobile :global(.toc-title) {
+      display: none;
+    }
+  }
+
+  @media (max-width: 520px) {
+    .post-nav {
+      grid-template-columns: 1fr;
+    }
   }
 </style>

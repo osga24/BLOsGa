@@ -1,157 +1,78 @@
 ---
-// Theme toggle cycling: light → dark → system.
-// "system" follows the OS prefers-color-scheme and updates live.
-// Persists the chosen mode (not the resolved theme) to localStorage["theme"].
+import { Icon } from "astro-icon/components";
 ---
 
-<button type="button" class="theme-toggle" data-theme-toggle aria-label="切換主題">
-  <i class="theme-icon ti-sun icon-[tabler--sun-filled]"></i>
-  <i class="theme-icon ti-moon icon-[tabler--moon-filled]"></i>
-  <i class="theme-icon ti-system icon-[tabler--device-desktop]"></i>
+<button type="button" class="icon-button theme-toggle interactive-link hover-scale" data-theme-toggle aria-label="切換深色模式">
+  <span class="theme-icon theme-icon-sun" aria-hidden="true"><Icon name="lucide:sun-medium" /></span>
+  <span class="theme-icon theme-icon-moon" aria-hidden="true"><Icon name="lucide:moon-star" /></span>
 </button>
 
 <script>
   const root = document.documentElement;
-  const MODES = ["light", "dark", "system"] as const;
-  type Mode = (typeof MODES)[number];
-  const mql = window.matchMedia("(prefers-color-scheme: dark)");
+  const motionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
+  const vtDocument = document as Document & {
+    startViewTransition?: (update: () => void) => { ready: Promise<void> };
+  };
 
-  const systemTheme = () => (mql.matches ? "dark" : "light");
-
-  function getMode(): Mode {
+  const applyTheme = (theme: "light" | "dark") => {
+    root.dataset.theme = theme;
     try {
-      const m = localStorage.getItem("theme");
-      return (MODES as readonly string[]).includes(m ?? "") ? (m as Mode) : "system";
-    } catch {
-      return "system";
-    }
-  }
-
-  function applyMode(mode: Mode) {
-    root.dataset.themeMode = mode;
-    root.dataset.theme = mode === "system" ? systemTheme() : mode;
-    try {
-      localStorage.setItem("theme", mode);
+      window.localStorage.setItem("theme-preference", theme);
     } catch {}
-  }
+    document.querySelectorAll("[data-theme-toggle]").forEach((button) => {
+      button.setAttribute("aria-label", theme === "dark" ? "切換淺色模式" : "切換深色模式");
+    });
+  };
 
-  // Keep "system" mode in sync with live OS changes.
-  mql.addEventListener("change", () => {
-    if (getMode() === "system") root.dataset.theme = systemTheme();
-  });
-
-  function bind() {
-    const button = document.querySelector<HTMLButtonElement>("[data-theme-toggle]");
-    if (!button || (button as any)._bound) return;
-    (button as any)._bound = true;
-
-    const motion = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const doc = document as Document & {
-      startViewTransition?: (cb: () => void) => {
-        ready: Promise<void>;
-        finished: Promise<void>;
-      };
-    };
-
+  document.querySelectorAll<HTMLButtonElement>("[data-theme-toggle]").forEach((button) => {
     button.addEventListener("click", () => {
-      const next = MODES[(MODES.indexOf(getMode()) + 1) % MODES.length];
+      const nextTheme = root.dataset.theme === "dark" ? "light" : "dark";
 
-      if (!doc.startViewTransition || motion.matches) {
-        applyMode(next);
+      if (!vtDocument.startViewTransition || motionQuery.matches) {
+        applyTheme(nextTheme);
         return;
       }
 
+      // Circle reveal from the button, same as osga.dev
       const rect = button.getBoundingClientRect();
       const x = rect.left + rect.width / 2;
       const y = rect.top + rect.height / 2;
-      const end = Math.hypot(
+      const endRadius = Math.hypot(
         Math.max(x, window.innerWidth - x),
         Math.max(y, window.innerHeight - y),
       );
 
-      root.setAttribute("data-theme-transition", "");
-      const transition = doc.startViewTransition(() => applyMode(next));
+      const transition = vtDocument.startViewTransition(() => applyTheme(nextTheme));
       transition.ready.then(() => {
-        root.animate(
+        document.documentElement.animate(
+          { clipPath: [`circle(0px at ${x}px ${y}px)`, `circle(${endRadius}px at ${x}px ${y}px)`] },
           {
-            clipPath: [
-              `circle(0px at ${x}px ${y}px)`,
-              `circle(${end}px at ${x}px ${y}px)`,
-            ],
-          },
-          {
-            duration: 520,
+            duration: 560,
             easing: "cubic-bezier(0.2, 0.65, 0.3, 0.9)",
             pseudoElement: "::view-transition-new(root)",
           },
         );
       });
-      transition.finished.finally(() => {
-        root.removeAttribute("data-theme-transition");
-      });
     });
-  }
-
-  bind();
-  document.addEventListener("astro:page-load", bind);
+  });
 </script>
 
 <style>
   .theme-toggle {
     position: relative;
-    appearance: none;
-    border: 1px solid rgba(var(--border), 0.35);
-    background: rgba(var(--bg-card), 0.4);
-    color: rgb(var(--gray));
-    width: 2.5rem;
-    height: 2.5rem;
-    padding: 0;
-    cursor: pointer;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    transition:
-      color 0.25s ease,
-      border-color 0.25s ease,
-      background 0.25s ease,
-      transform 0.2s ease;
-  }
-
-  .theme-toggle:hover {
-    color: var(--accent);
-    border-color: rgba(var(--accent-rgb), 0.45);
-    transform: scale(1.06);
   }
 
   .theme-icon {
     position: absolute;
-    width: 1.05rem;
-    height: 1.05rem;
-    opacity: 0;
-    transform: scale(0.6) rotate(-45deg);
+    display: inline-flex;
     transition:
       opacity 0.2s ease,
       transform 0.2s ease;
   }
 
-  :global([data-theme-mode="light"]) .ti-sun,
-  :global(:root:not([data-theme-mode])) .ti-sun {
-    opacity: 1;
-    transform: scale(1) rotate(0);
-  }
-  :global([data-theme-mode="dark"]) .ti-moon {
-    opacity: 1;
-    transform: scale(1) rotate(0);
-  }
-  :global([data-theme-mode="system"]) .ti-system {
-    opacity: 1;
-    transform: scale(1) rotate(0);
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .theme-toggle,
-    .theme-icon {
-      transition: none;
-    }
+  :global(:root[data-theme="dark"]) .theme-icon-sun,
+  :global(:root:not([data-theme="dark"])) .theme-icon-moon {
+    opacity: 0;
+    transform: scale(0.75);
   }
 </style>

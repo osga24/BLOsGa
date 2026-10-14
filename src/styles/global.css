@@ -1,0 +1,242 @@
+/* ============================================================
+   BLOsGa — tokens follow osga.dev (cream / ink / sage)
+   ============================================================ */
+:root,
+:root[data-theme="light"] {
+  color-scheme: light;
+  --bg: #f7f1e3;
+  --bg-soft: #efe8d7;
+  --text: #151515;
+  --text-body: #2f322f;
+  --muted: #666b67;
+  --accent: #495954;
+  --accent-soft: rgba(73, 89, 84, 0.1);
+  --icon: #7a837f;
+  --icon-hover: #495954;
+  --line: rgba(73, 89, 84, 0.22);
+  --line-strong: rgba(73, 89, 84, 0.4);
+  --code-bg: #efe8d7;
+  --selection: rgba(73, 89, 84, 0.2);
+
+  --font-mono: "JetBrains Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --font-sans: "JetBrains Mono", ui-monospace, -apple-system, "PingFang TC",
+    "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+  --font-body: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC",
+    "Noto Sans TC", "Microsoft JhengHei", sans-serif;
+
+  --ease: cubic-bezier(0.2, 0.65, 0.3, 0.9);
+  --theme-duration: 0.32s;
+  --radius: 0; /* square edges, as on osga.dev */
+  --content-width: 42rem;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #151515;
+  --bg-soft: #1d1e1d;
+  --text: #f7f1e3;
+  --text-body: #d6d0c3;
+  --muted: #a59f93;
+  --accent: #c7d1cc;
+  --accent-soft: rgba(199, 209, 204, 0.08);
+  --icon: #8f978f;
+  --icon-hover: #c7d1cc;
+  --line: rgba(199, 209, 204, 0.16);
+  --line-strong: rgba(199, 209, 204, 0.32);
+  --code-bg: #1d1e1d;
+  --selection: rgba(199, 209, 204, 0.2);
+}
+
+/* ============================================================
+   Base
+   ============================================================ */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  scroll-padding-top: 2rem;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.7;
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  transition:
+    background-color var(--theme-duration) var(--ease),
+    color var(--theme-duration) var(--ease);
+}
+
+::selection {
+  background: var(--selection);
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  color: var(--text);
+  letter-spacing: -0.03em;
+  line-height: 1.3;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ============================================================
+   Shared helpers (same names as osga.dev)
+   ============================================================ */
+.text-muted {
+  color: var(--muted);
+}
+
+.meta-kicker {
+  margin: 0 0 0.75rem;
+  font-size: 0.72rem;
+  color: var(--muted);
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+.divided-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
+}
+
+.divided-list > li {
+  border-bottom: 1px solid var(--line);
+}
+
+.interactive-link {
+  transition:
+    color var(--theme-duration) var(--ease),
+    border-color var(--theme-duration) var(--ease),
+    transform 0.2s ease,
+    background-color var(--theme-duration) var(--ease);
+}
+
+.interactive-link:hover {
+  color: var(--icon-hover);
+}
+
+.hover-scale:hover {
+  transform: scale(var(--hover-scale, 1.05));
+}
+
+.icon-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  padding: 0;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: transparent;
+  color: var(--icon);
+  cursor: pointer;
+  --hover-scale: 1.08;
+}
+
+.icon-button svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.tag-chip {
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.75rem;
+  color: var(--muted);
+  border: 1px solid var(--line);
+  padding: 0.1rem 0.6rem;
+  line-height: 1.6;
+  transition:
+    color var(--theme-duration) var(--ease),
+    border-color var(--theme-duration) var(--ease);
+}
+
+a.tag-chip:hover {
+  color: var(--text);
+  border-color: var(--line-strong);
+}
+
+.page-title {
+  margin: 0;
+  font-size: clamp(1.6rem, 4vw, 2.1rem);
+  font-weight: 700;
+  letter-spacing: -0.05em;
+}
+
+.page-lead {
+  margin: 0.6rem 0 0;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+/* Theme-switch circle reveal (from osga.dev ThemeToggle) */
+:root::view-transition-group(root) {
+  animation-duration: 560ms;
+}
+
+:root::view-transition-image-pair(root) {
+  isolation: auto;
+}
+
+:root::view-transition-old(root),
+:root::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+  display: block;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+  .hover-scale:hover {
+    transform: none;
+  }
+}

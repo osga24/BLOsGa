@@ -1,0 +1,39 @@
+---
+import type { GetStaticPaths } from "astro";
+import BaseLayout from "@layouts/BaseLayout.astro";
+import PostList from "@components/PostList.astro";
+import { getPosts, type Post } from "@utils/posts";
+
+export const getStaticPaths = (async () => {
+  const posts = await getPosts();
+  const tags = [...new Set(posts.flatMap((p) => p.data.tags))];
+  return tags.map((tag) => ({
+    params: { tag },
+    props: { tag, posts: posts.filter((p) => p.data.tags.includes(tag)) },
+  }));
+}) satisfies GetStaticPaths;
+
+type Props = { tag: string; posts: Post[] };
+const { tag, posts } = Astro.props;
+---
+
+<BaseLayout title={`#${tag}`} description={`所有關於 ${tag} 的文章`}>
+  <header class="term-head">
+    <a class="meta-kicker back" href="/tags/">← Tags</a>
+    <h1 class="page-title">#{tag}</h1>
+    <p class="page-lead">{posts.length} 篇文章</p>
+  </header>
+  <PostList posts={posts} />
+</BaseLayout>
+
+<style>
+  .term-head {
+    margin-bottom: 2rem;
+  }
+  .back {
+    display: inline-block;
+  }
+  .back:hover {
+    color: var(--text);
+  }
+</style>
