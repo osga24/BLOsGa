@@ -1,0 +1,41 @@
+---
+import { Icon } from "astro-icon/components";
+import ThemeToggle from "@components/ThemeToggle.astro";
+import { SOCIAL_LINKS } from "@consts";
+---
+
+<div class="actions">
+  {
+    SOCIAL_LINKS.map((link) => (
+      <a
+        class="icon-button interactive-link hover-scale"
+        href={link.href}
+        aria-label={link.label}
+        {...(link.href.startsWith("http") ? { target: "_blank", rel: "noopener" } : {})}
+      >
+        <Icon name={link.icon} />
+      </a>
+    ))
+  }
+  <ThemeToggle />
+</div>
+
+<style>
+  .actions {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0.5rem;
+  }
+
+  @media (max-width: 959px) {
+    .actions {
+      gap: 0.4rem;
+    }
+  }
+
+  @media (max-width: 420px) {
+    .actions :global(a[aria-label="RSS"]) {
+      display: none;
+    }
+  }
+</style>

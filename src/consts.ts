@@ -3,8 +3,6 @@ export const SITE_AUTHOR = "OsGa";
 export const SITE_DESCRIPTION = "OsGa 的部落格 — 紀錄技術、資安與生活";
 export const SITE_INTRO = "紀錄技術、資安與生活。\n偶爾出題，常常踩坑。";
 
-export const POSTS_PER_PAGE = 10;
-
 export const NAV_LINKS = [
   { href: "/", label: "Posts" },
   { href: "/category/", label: "Category" },

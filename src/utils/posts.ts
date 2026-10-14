@@ -18,3 +18,18 @@ export function countBy(values: string[]): [string, number][] {
 export function formatDate(date: Date): string {
   return date.toISOString().slice(0, 10);
 }
+
+/** Plain-text excerpt: the description, or the opening of the body if empty. */
+export function getExcerpt(post: Post, length = 110): string {
+  if (post.data.description.trim()) return post.data.description.trim();
+  const text = (post.body ?? "")
+    .replace(/```[\s\S]*?```/g, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, " ")
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, "$1")
+    .replace(/^#{1,6}\s+.*$/gm, " ")
+    .replace(/[*_`~>|]/g, "")
+    .replace(/\s+/g, " ")
+    .trim();
+  return text.length > length ? `${text.slice(0, length)}…` : text;
+}

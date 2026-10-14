@@ -1,0 +1,117 @@
+---
+import { NAV_LINKS } from "@consts";
+
+type Props = {
+  /** Desktop layout; on mobile both become the fixed bottom pill (osga.dev pattern). */
+  direction?: "vertical" | "horizontal";
+};
+
+const { direction = "vertical" } = Astro.props;
+const path = Astro.url.pathname;
+const isActive = (href: string) =>
+  href === "/" ? path === "/" || path.startsWith("/posts/") : path.startsWith(href);
+---
+
+<nav class:list={["site-nav", `is-${direction}`]} aria-label="主選單">
+  <ul class="nav-list">
+    {
+      NAV_LINKS.map((item) => (
+        <li>
+          <a class:list={["nav-link", { "is-active": isActive(item.href) }]} href={item.href}>
+            {item.label}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</nav>
+
+<style>
+  .nav-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+  }
+
+  .nav-link {
+    display: block;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    transition:
+      color var(--theme-duration) var(--ease),
+      border-color var(--theme-duration) var(--ease),
+      background-color var(--theme-duration) var(--ease);
+  }
+
+  .nav-link:hover,
+  .nav-link.is-active {
+    color: var(--text);
+  }
+
+  @media (min-width: 960px) {
+    .is-vertical .nav-list {
+      flex-direction: column;
+      gap: 1.1rem;
+    }
+
+    .is-vertical .nav-link {
+      padding-left: 0.7rem;
+      border-left: 1.5px solid transparent;
+    }
+
+    .is-vertical .nav-link.is-active {
+      border-left-color: var(--text);
+    }
+
+    .is-horizontal .nav-list {
+      gap: 1.75rem;
+    }
+
+    .is-horizontal .nav-link {
+      padding-bottom: 0.25rem;
+      border-bottom: 1.5px solid transparent;
+    }
+
+    .is-horizontal .nav-link.is-active {
+      border-bottom-color: var(--text);
+    }
+  }
+
+  @media (max-width: 959px) {
+    .site-nav {
+      position: fixed;
+      bottom: 1.25rem;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 40;
+      background: var(--bg);
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 0.4rem 0.55rem;
+      max-width: calc(100vw - 2rem);
+      box-shadow: 0 6px 24px rgba(0, 0, 0, 0.06);
+      transition:
+        background-color var(--theme-duration) var(--ease),
+        border-color var(--theme-duration) var(--ease);
+    }
+
+    .nav-list {
+      gap: 0.15rem;
+      white-space: nowrap;
+    }
+
+    .nav-link {
+      padding: 0.35rem 0.75rem;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      letter-spacing: 0.08em;
+    }
+
+    .nav-link.is-active {
+      background: var(--line);
+    }
+  }
+</style>

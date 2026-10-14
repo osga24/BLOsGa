@@ -1,0 +1,94 @@
+---
+import SiteNav from "@components/SiteNav.astro";
+import SocialActions from "@components/SocialActions.astro";
+import { SITE_AUTHOR, SITE_INTRO } from "@consts";
+---
+
+<header class="home-header">
+  <div class="brand-block">
+    <a class="brand" href="/" aria-label="BLOsGa 首頁">
+      <span class="wordmark">{SITE_AUTHOR}</span>
+      <span class="brand-sub">Blog</span>
+    </a>
+    <p class="intro">{SITE_INTRO}</p>
+    <div class="actions-wrap">
+      <SocialActions />
+    </div>
+  </div>
+  <SiteNav direction="horizontal" />
+</header>
+
+<style>
+  .home-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    gap: 2rem;
+  }
+
+  .brand {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.9rem;
+    line-height: 1;
+  }
+
+  .wordmark {
+    font-weight: 700;
+    font-size: clamp(2rem, 6vw, 3.75rem);
+    letter-spacing: -0.06em;
+    color: var(--text);
+    transition: color var(--theme-duration) var(--ease);
+  }
+
+  .brand-sub {
+    font-size: clamp(0.75rem, 1.6vw, 1rem);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  .brand:hover .wordmark {
+    color: var(--accent);
+  }
+
+  .intro {
+    margin: 1rem 0 0;
+    font-size: 0.85rem;
+    line-height: 1.7;
+    color: var(--muted);
+    white-space: pre-line;
+  }
+
+  .actions-wrap {
+    margin-top: 1.25rem;
+  }
+
+  @media (max-width: 959px) {
+    .brand-block {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      align-items: center;
+      width: 100%;
+    }
+
+    .intro {
+      grid-column: 1 / -1;
+      grid-row: 2;
+    }
+
+    .actions-wrap {
+      margin-top: 0;
+    }
+  }
+
+  @media (max-width: 520px) {
+    .brand {
+      gap: 0.6rem;
+    }
+
+    .intro {
+      font-size: 0.8rem;
+    }
+  }
+</style>

@@ -8,9 +8,11 @@ type Props = {
   description: string;
   image?: string;
   type?: "website" | "article";
+  /** Full-width page without the sidebar (homepage card grid). */
+  wide?: boolean;
 };
 
-const props = Astro.props;
+const { wide = false, ...props } = Astro.props;
 ---
 
 <!doctype html>
@@ -20,17 +22,29 @@ const props = Astro.props;
     <slot name="head" />
   </head>
   <body>
-    <div class="shell">
-      <div class="shell-side">
-        <Sidebar>
-          <slot name="sidebar" />
-        </Sidebar>
-      </div>
-      <main class="shell-main">
-        <slot />
-        <Footer />
-      </main>
-    </div>
+    {
+      wide ? (
+        <div class="shell-wide">
+          <slot name="header" />
+          <main class="shell-main">
+            <slot />
+            <Footer />
+          </main>
+        </div>
+      ) : (
+        <div class="shell">
+          <div class="shell-side">
+            <Sidebar>
+              <slot name="sidebar" />
+            </Sidebar>
+          </div>
+          <main class="shell-main">
+            <slot />
+            <Footer />
+          </main>
+        </div>
+      )
+    }
   </body>
 </html>
 
@@ -60,6 +74,16 @@ const props = Astro.props;
     min-width: 0;
   }
 
+  .shell-wide {
+    max-width: 80rem;
+    margin: 0 auto;
+    padding: 6rem clamp(1.5rem, 5vw, 4rem) 3rem;
+  }
+
+  .shell-wide .shell-main {
+    margin-top: 4.5rem;
+  }
+
   @media (max-width: 959px) {
     .shell {
       grid-template-columns: minmax(0, 1fr);
@@ -76,7 +100,21 @@ const props = Astro.props;
     }
   }
 
+  @media (max-width: 959px) {
+    .shell-wide {
+      padding: 1.75rem 1.25rem 7rem;
+    }
+
+    .shell-wide .shell-main {
+      margin-top: 2.5rem;
+    }
+  }
+
   @media (max-width: 520px) {
+    .shell-wide {
+      padding: 1.25rem 1rem 7rem;
+    }
+
     .shell {
       padding: 1.25rem 1rem 7rem;
       row-gap: 2.25rem;
