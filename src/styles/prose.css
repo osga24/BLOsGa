@@ -131,7 +131,6 @@
   display: block;
   margin: 1.75rem auto;
   border-radius: var(--radius);
-  border: 1px solid var(--line);
   cursor: zoom-in;
 }
 
