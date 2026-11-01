@@ -3,6 +3,8 @@ export const SITE_AUTHOR = "OsGa";
 export const SITE_DESCRIPTION = "OsGa 的部落格 — 紀錄技術、資安與生活";
 export const SITE_INTRO = "紀錄技術、資安與生活。";
 
+export const DISCORD_URL = "https://dc.osga.dev";
+
 export const NAV_LINKS = [
   { href: "/", label: "Posts" },
   { href: "/category/", label: "Category" },

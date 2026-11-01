@@ -42,7 +42,7 @@ draft: false
 
 ```
 src/
-├── components/   HomeHeader、PostGrid、AboutCard、Sidebar、Search、TableOfContents…
+├── components/   HomeHeader、PostGrid、CommunityCard、Sidebar、Search、TableOfContents…
 ├── layouts/      BaseLayout（首頁卡片網格 / 內頁側欄）
 ├── pages/        /、/posts/[slug]/、/tags/、/category/、/search/
 ├── styles/       global.css（設計 token）、prose.css（文章排版）

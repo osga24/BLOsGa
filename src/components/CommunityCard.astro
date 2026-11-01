@@ -1,0 +1,111 @@
+---
+import { Icon } from "astro-icon/components";
+import { DISCORD_URL } from "@consts";
+
+const host = new URL(DISCORD_URL).host;
+---
+
+<a class="community-card" href={DISCORD_URL} target="_blank" rel="noopener">
+  <div class="card-rule">
+    <span>Community</span>
+    <span>{host} ↗</span>
+  </div>
+
+  <div class="community-panel" aria-hidden="true">
+    <Icon name="simple-icons:discord" class="panel-logo" />
+    <span class="panel-host">{host}</span>
+  </div>
+
+  <p class="community-title">一起來聊聊吧！</p>
+  <p class="community-text">
+    資安、開發、CTF 或日常雜談都歡迎。<br />加入 Discord，跟大家一起交流、互相幫忙。
+  </p>
+  <span class="community-link">Join Discord →</span>
+</a>
+
+<style>
+  .community-card {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    padding: 0 1.25rem 1.5rem;
+    border: 1px solid var(--line);
+    background: var(--bg-soft);
+    transition:
+      border-color 0.3s var(--ease),
+      background-color var(--theme-duration) var(--ease);
+  }
+
+  .card-rule {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.9rem 0 0.75rem;
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+  }
+
+  /* Logo row sits directly on the card, no filled block */
+  .community-panel {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 1.1rem 0 0.25rem;
+    color: var(--text);
+  }
+
+  .community-panel :global(.panel-logo) {
+    width: 2.75rem;
+    height: 2.75rem;
+    transition: transform 0.6s var(--ease);
+  }
+
+  .panel-host {
+    font-size: 1.1rem;
+    font-weight: 700;
+    letter-spacing: -0.03em;
+  }
+
+  .community-title {
+    margin: 1.4rem 0 0;
+    font-size: 1.75rem;
+    font-weight: 700;
+    letter-spacing: -0.06em;
+    line-height: 1.15;
+  }
+
+  .community-text {
+    margin: 0.85rem 0 0;
+    font-family: var(--font-body);
+    font-size: 0.88rem;
+    line-height: 1.75;
+    color: var(--muted);
+  }
+
+  .community-link {
+    align-self: flex-start;
+    margin-top: auto;
+    padding-top: 1.5rem;
+    font-size: 0.72rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted);
+    transition: color 0.3s var(--ease);
+  }
+
+  @media (hover: hover) {
+    .community-card:hover {
+      border-color: var(--line-strong);
+    }
+
+    .community-card:hover .community-link,
+    .community-card:hover .card-rule span:last-child {
+      color: var(--text);
+    }
+
+    .community-card:hover .community-panel :global(.panel-logo) {
+      transform: rotate(-8deg) scale(1.1);
+    }
+  }
+</style>

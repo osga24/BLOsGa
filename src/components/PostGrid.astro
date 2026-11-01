@@ -1,14 +1,14 @@
 ---
 import { Image } from "astro:assets";
 import { render } from "astro:content";
-import AboutCard from "@components/AboutCard.astro";
+import CommunityCard from "@components/CommunityCard.astro";
 import { formatDate, getExcerpt, type Post } from "@utils/posts";
 
 type Props = { posts: Post[] };
 const { posts } = Astro.props;
 
-// Newest post spans two columns; the About card takes the slot after the second post.
-const ABOUT_AFTER = 2;
+// Newest post spans two columns; the Discord card takes the slot after the second post.
+const COMMUNITY_AFTER = 2;
 
 const items = await Promise.all(
   posts.map(async (post) => ({
@@ -47,7 +47,7 @@ const dotted = (d: Date) => formatDate(d).replaceAll("-", ".");
           </p>
           <p class="card-excerpt">{getExcerpt(post)}</p>
         </a>
-        {i === ABOUT_AFTER - 1 && <AboutCard />}
+        {i === COMMUNITY_AFTER - 1 && <CommunityCard />}
       </>
     ))
   }
