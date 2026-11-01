@@ -5,7 +5,6 @@ heroImage: "hero.webp"
 description: "兩套視窗管理器各用了一年多，結果繞了一圈又把 yabai 裝回來，順便記錄一下現在這坨設定。"
 tags: ["MacOS", "Setup", "yabai", "AeroSpace"]
 category: "dev"
-draft: true
 ---
 
 <!-- 編輯註記：RDP 全螢幕的具體問題仍待補充；目前架構依本機設定與「yabai 設定」紀錄整理。 -->
