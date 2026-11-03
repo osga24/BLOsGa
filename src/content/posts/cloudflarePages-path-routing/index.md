@@ -13,7 +13,7 @@ category: "dev"
 
 不過在開始寫新網站之前，有一些累積下來的技術債和需求想先處理掉，其中一個就是歷年網站的網址
 
-如果你有使用過 GitHub Pages 或看過 SITCON 網站的話，你應該會發現你可以用不同 path 到歷年不同技術棧的年會網站或其他資訊網站，像是：
+如果你有使用過 GitHub Pages 或看過 SITCON 網站的話，你應該會發現你可以用不同 path 到歷年不同Tech Stack的年會網站或其他資訊網站，像是：
 
 - [sitcon.org/2013](https://sitcon.org/2013/) 是純 HTML
 - [sitcon.org/2022](https://sitcon.org/2022/) 是 Vue 3 + Vite
@@ -33,7 +33,7 @@ sitcon-tw/podcast               →  sitcon.org/podcast/
 
 不過 Cloudflare Pages 就沒有這種「同一個網域底下，依路徑分給不同專案」的功能了，一個 Custom Domain 只能綁一個 Pages 專案，所以想在 Cloudflare 上做到一樣的效果，就得自己動手
 
-而 TWNOG 的狀況跟 SITCON 很像，每年都會有一個新網站，而且每年的人、技術棧都不太一樣
+而 TWNOG 的狀況跟 SITCON 很像，每年都會有一個新網站，而且每年的人、Tech Stack都不太一樣
 
 2024 是 Vue，2025、2026 是 Next.js，2027 換成 Astro，每一屆都是獨立的 GitHub Repo、獨立的 Cloudflare Pages，網址也是一年一個子網域：
 
