@@ -151,7 +151,7 @@ npx wrangler pages deploy dist --project-name twnog-site-2027 --branch main
 
 所以下一步 Router 轉送的時候要把年份**拿掉**再轉，這個我叫它 `strip` 模式
 
-> 命名的部分我統一用 `twnog-site-<year>`，原本的 `2025-twnog-net` 那些專案先留著不刪，舊子網域雖然已經改成 302，但只要拿掉對應的 Worker Route，就能直接切回原本的網站
+> 命名的部分我統一用 `twnog-site-<year>`，原本的 `2025-twnog-net` 那些專案在確認新網址穩定後就刪掉了，舊子網域改由 Worker 負責 302
 
 ## 3. Router 設定
 
@@ -249,9 +249,9 @@ if (url.pathname === "/") {
   },
   "routes": [
     { "pattern": "twnog.net/*", "zone_name": "twnog.net" },
-    { "pattern": "2024.twnog.net/*", "zone_name": "twnog.net" },
-    { "pattern": "2025.twnog.net/*", "zone_name": "twnog.net" },
-    { "pattern": "2026.twnog.net/*", "zone_name": "twnog.net" },
+    { "pattern": "2024.twnog.net", "custom_domain": true },
+    { "pattern": "2025.twnog.net", "custom_domain": true },
+    { "pattern": "2026.twnog.net", "custom_domain": true },
   ],
 }
 ```
@@ -286,7 +286,9 @@ if (Object.hasOwn(legacyHosts, url.hostname)) {
 2025.twnog.net/agenda?day=1  →  302  →  twnog.net/2025/agenda?day=1
 ```
 
-舊的 DNS 紀錄要留著，Worker Route 才接得到請求。這邊一樣先用 302，等穩定一陣子再考慮換 301，301 被快取之後就很難反悔了
+舊子網域我是設成 Worker 的 **Custom Domain** 而不是 Route，部署時 Cloudflare 會自動建好 Proxied 的 DNS 紀錄，舊的 Pages 專案刪掉也不影響。如果用 Route，就得自己保留一筆 Proxied 的 DNS 紀錄，請求才進得到 Worker
+
+這邊一樣先用 302，等穩定一陣子再考慮換 301，301 被快取之後就很難反悔了
 
 # Worker 裡面的判斷流程
 
